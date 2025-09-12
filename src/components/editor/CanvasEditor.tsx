@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 // @ts-ignore
-import { fabric } from 'fabric';
+import * as fabric from 'fabric';
 import FilterPanel from './FilterPanel';
 import TemplatePanel from './TemplatePanel';
 import AIEnhancementPanel from './AIEnhancementPanel';
@@ -27,8 +27,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   const [isProcessingAI, setIsProcessingAI] = useState<boolean>(false);
 
   useEffect(() => {
-    if (canvasRef.current && !canvas) {
-      const fabricCanvas = new fabric.Canvas(canvasRef.current, {
+    if (canvasRef.current && !canvas && fabric) {
+      const fabricCanvas = new (fabric as any).Canvas(canvasRef.current, {
         width,
         height,
         backgroundColor: '#ffffff',
@@ -50,7 +50,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         canvas.dispose();
       }
     };
-  }, [canvasRef, width, height]);
+  }, [canvasRef, width, height, fabric, canvas]);
 
   const handleSelection = (e: any) => {
     // Handle object selection
@@ -63,9 +63,9 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   };
 
   const addText = () => {
-    if (!canvas) return;
+    if (!canvas || !fabric) return;
 
-    const text = new fabric.IText('Edit me', {
+    const text = new (fabric as any).IText('Edit me', {
       left: 100,
       top: 100,
       fontSize: 24,
@@ -78,9 +78,9 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   };
 
   const addRectangle = () => {
-    if (!canvas) return;
+    if (!canvas || !fabric) return;
 
-    const rect = new fabric.Rect({
+    const rect = new (fabric as any).Rect({
       left: 100,
       top: 100,
       width: 100,
@@ -95,9 +95,9 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   };
 
   const addCircle = () => {
-    if (!canvas) return;
+    if (!canvas || !fabric) return;
 
-    const circle = new fabric.Circle({
+    const circle = new (fabric as any).Circle({
       radius: 50,
       left: 100,
       top: 100,
@@ -138,7 +138,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !canvas) return;
+    if (!file || !canvas || !fabric) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
