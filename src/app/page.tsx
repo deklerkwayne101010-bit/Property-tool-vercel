@@ -28,8 +28,28 @@ const PropertyDescriptionGenerator = dynamic(() => import('@/components/property
   )
 });
 
+const CRMDashboard = dynamic(() => import('@/components/crm/CRMDashboard'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex flex-col items-center justify-center h-96 space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <p className="text-gray-600 animate-pulse">Loading CRM Dashboard...</p>
+    </div>
+  )
+});
+
+const SocialMediaScheduler = dynamic(() => import('@/components/social/SocialMediaScheduler'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex flex-col items-center justify-center h-96 space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      <p className="text-gray-600 animate-pulse">Loading Social Media Scheduler...</p>
+    </div>
+  )
+});
+
 export default function Home() {
-  const [activeFeature, setActiveFeature] = useState<'editor' | 'description' | null>(null);
+  const [activeFeature, setActiveFeature] = useState<'editor' | 'description' | 'crm' | 'social' | null>(null);
 
   const handleSave = (canvas: unknown) => {
     console.log('Canvas saved:', canvas);
@@ -223,6 +243,30 @@ export default function Home() {
                     />
                   </div>
                 )}
+
+                {activeFeature === 'crm' && (
+                  <div>
+                    <div className="text-center mb-8">
+                      <h2 className="text-3xl font-bold text-gray-900 mb-4">CRM & Pipeline Management</h2>
+                      <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                        Advanced contact management with sales pipeline tracking and automated follow-ups
+                      </p>
+                    </div>
+                    <CRMDashboard />
+                  </div>
+                )}
+
+                {activeFeature === 'social' && (
+                  <div>
+                    <div className="text-center mb-8">
+                      <h2 className="text-3xl font-bold text-gray-900 mb-4">Social Media Automation</h2>
+                      <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                        Schedule and automate property posts across Facebook, Instagram, LinkedIn, and more
+                      </p>
+                    </div>
+                    <SocialMediaScheduler />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -230,41 +274,183 @@ export default function Home() {
 
         {/* Additional Features Preview */}
         {!activeFeature && (
-          <div className="text-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">More Powerful Features</h3>
-            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-              Discover additional tools to supercharge your property marketing workflow
-            </p>
+          <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">Complete Real Estate Marketing Suite</h3>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Everything you need to dominate your local real estate market
+              </p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-lg transition-shadow duration-300">
-                <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Lightning Fast</h4>
-                <p className="text-gray-600 text-sm">Generate content in seconds with our optimized AI</p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {/* CRM & Pipeline */}
+              <Card
+                variant="gradient"
+                hover
+                className="cursor-pointer group"
+                onClick={() => setActiveFeature('crm')}
+              >
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">CRM & Pipeline</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Advanced contact management with sales pipeline tracking and automated follow-ups
+                  </p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                      Lead scoring & nurturing
+                    </div>
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                      Sales pipeline visualization
+                    </div>
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                      Automated follow-up sequences
+                    </div>
+                  </div>
+                  <Button variant="secondary" size="sm" className="w-full group-hover:bg-blue-700 transition-colors duration-200">
+                    Manage CRM →
+                  </Button>
+                </CardContent>
+              </Card>
 
-              <div className="text-center p-6 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-lg transition-shadow duration-300">
-                <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Team Collaboration</h4>
-                <p className="text-gray-600 text-sm">Work together in real-time on property campaigns</p>
-              </div>
+              {/* Social Media Automation */}
+              <Card
+                variant="gradient"
+                hover
+                className="cursor-pointer group"
+                onClick={() => setActiveFeature('social')}
+              >
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">Social Media Automation</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Schedule and automate property posts across Facebook, Instagram, LinkedIn, and more
+                  </p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>
+                      Multi-platform scheduling
+                    </div>
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>
+                      Automated posting
+                    </div>
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>
+                      Performance analytics
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" className="w-full group-hover:bg-purple-100 transition-colors duration-200">
+                    Schedule Posts →
+                  </Button>
+                </CardContent>
+              </Card>
 
-              <div className="text-center p-6 rounded-xl bg-gradient-to-br from-green-50 to-green-100 hover:shadow-lg transition-shadow duration-300">
-                <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Analytics Dashboard</h4>
-                <p className="text-gray-600 text-sm">Track performance and optimize your marketing</p>
+              {/* Analytics Dashboard */}
+              <Card
+                variant="gradient"
+                hover
+                className="cursor-pointer group"
+              >
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">Analytics Dashboard</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Comprehensive insights into your marketing performance and ROI tracking
+                  </p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                      Marketing ROI tracking
+                    </div>
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                      Lead conversion analytics
+                    </div>
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                      Performance reports
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" className="w-full group-hover:bg-green-100 transition-colors duration-200">
+                    View Analytics →
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Team Collaboration */}
+              <Card
+                variant="gradient"
+                hover
+                className="cursor-pointer group"
+              >
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">Team Collaboration</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Real-time collaboration tools for teams and brokerages
+                  </p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>
+                      Live editing & comments
+                    </div>
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>
+                      Role-based permissions
+                    </div>
+                    <div className="flex items-center text-sm text-gray-700">
+                      <span className="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>
+                      Activity tracking
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" className="w-full group-hover:bg-orange-100 transition-colors duration-200">
+                    Collaborate →
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Call to Action */}
+            <div className="text-center bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Transform Your Real Estate Business?</h3>
+              <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+                Join thousands of real estate professionals who have already revolutionized their marketing workflow with PropertyPro
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button variant="primary" size="lg" className="px-8">
+                  Start Free Trial
+                </Button>
+                <Button variant="outline" size="lg" className="px-8">
+                  Schedule Demo
+                </Button>
               </div>
             </div>
           </div>
