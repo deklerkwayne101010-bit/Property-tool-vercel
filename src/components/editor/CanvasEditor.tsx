@@ -50,7 +50,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         canvas.dispose();
       }
     };
-  }, [width, height, fabric, canvas]);
+  }, [width, height, canvas]);
 
   const handleSelection = (e: any) => {
     // Handle object selection

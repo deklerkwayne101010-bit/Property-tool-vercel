@@ -8,10 +8,12 @@ export interface AuthenticatedRequest extends NextRequest {
     userId: string;
     email: string;
     role: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   };
 }
 
-export async function authenticateToken(request: NextRequest): Promise<{ user: any } | { error: NextResponse }> {
+export async function authenticateToken(request: NextRequest): Promise<{ user: unknown } | { error: NextResponse }> {
   try {
     const authHeader = request.headers.get('authorization');
     const token = authHeader && authHeader.split(' ')[1];
@@ -60,7 +62,7 @@ export function withAuth(handler: (request: NextRequest, ...args: unknown[]) => 
     }
 
     // Add user to request
-    (request as AuthenticatedRequest).user = authResult.user;
+    (request as AuthenticatedRequest).user = authResult.user as any;
 
     return handler(request, ...args);
   };
