@@ -123,39 +123,24 @@ const PropertyDescriptionGenerator: React.FC<PropertyDescriptionGeneratorProps> 
 
     setIsGenerating(true);
 
-    try {
-      const keywordArray = keywords.split(',').map(k => k.trim()).filter(k => k);
+    // Simulate API call with demo response
+    setTimeout(() => {
+      const demoDescriptions = {
+        professional: `Discover this exceptional ${propertyData.bedrooms} bedroom, ${propertyData.bathrooms} bathroom property located in the heart of ${propertyData.location.city}. This ${propertyData.squareFootage} square foot residence offers ${propertyData.amenities.slice(0, 3).join(', ')} and much more. Perfect for discerning buyers seeking quality and comfort.`,
+        casual: `Check out this awesome ${propertyData.bedrooms} bedroom, ${propertyData.bathrooms} bathroom home in ${propertyData.location.city}! With ${propertyData.squareFootage} square feet of living space, you'll love the ${propertyData.amenities.slice(0, 3).join(', ')} that make this place special. It's a great spot for anyone looking for their dream home!`,
+        enthusiastic: `WOW! This incredible ${propertyData.bedrooms} bedroom, ${propertyData.bathrooms} bathroom property in ${propertyData.location.city} is absolutely amazing! Boasting ${propertyData.squareFootage} square feet of fantastic living space with ${propertyData.amenities.slice(0, 3).join(', ')}, this home is ready for you to create unforgettable memories! Don't miss out on this opportunity!`,
+        luxury: `Indulge in the epitome of luxury living with this exquisite ${propertyData.bedrooms} bedroom, ${propertyData.bathrooms} bathroom estate in ${propertyData.location.city}. Spanning ${propertyData.squareFootage} square feet, this residence features premium ${propertyData.amenities.slice(0, 3).join(', ')} and unparalleled craftsmanship throughout. A rare opportunity for the most discerning buyer.`
+      };
 
-      const response = await fetch('/api/property/generate-description', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          propertyData,
-          tone,
-          platform,
-          keywords: keywordArray,
-          length: lengthOptions.find(opt => opt.value === length)?.words || '100-200'
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate description');
-      }
-
-      const result = await response.json();
-      setGeneratedDescription(result.description);
+      const description = demoDescriptions[tone as keyof typeof demoDescriptions] || demoDescriptions.professional;
+      setGeneratedDescription(description);
 
       if (onDescriptionGenerated) {
-        onDescriptionGenerated(result.description);
+        onDescriptionGenerated(description);
       }
-    } catch (error) {
-      console.error('Generation error:', error);
-      alert('Failed to generate description. Please try again.');
-    } finally {
+
       setIsGenerating(false);
-    }
+    }, 2000); // 2 second delay to simulate API call
   };
 
   const copyToClipboard = () => {

@@ -105,26 +105,35 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
         ))}
       </div>
 
+      {/* Demo Mode Notice */}
+      <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+        <h4 className="text-sm font-semibold text-yellow-900 mb-2">🚀 Demo Mode</h4>
+        <p className="text-sm text-yellow-800">
+          Currently showing demo effects. Full AI integration with OpenAI and Hugging Face coming soon!
+        </p>
+      </div>
+
       {/* Usage Tips */}
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
         <h4 className="text-sm font-medium text-blue-900 mb-2">💡 Tips</h4>
         <ul className="text-sm text-blue-800 space-y-1">
           <li>• Select an image on the canvas before applying enhancements</li>
-          <li>• AI processing may take a few seconds to complete</li>
-          <li>• Results are applied directly to the selected image</li>
+          <li>• Demo effects will apply visual changes to your images</li>
+          <li>• Real AI processing will be available after API setup</li>
           <li>• You can undo changes using Ctrl+Z</li>
         </ul>
       </div>
 
       {/* API Status */}
-      <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+      <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">AI Service Status</span>
+          <span className="text-sm text-orange-800">Status</span>
           <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-            <span className="text-sm text-green-600">Online</span>
+            <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+            <span className="text-sm text-orange-700">Demo Mode</span>
           </div>
         </div>
+        <p className="text-xs text-orange-600 mt-1">API integration pending</p>
       </div>
     </div>
   );

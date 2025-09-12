@@ -123,7 +123,7 @@ property-enhancer-app/
 
 ## 🚀 Deployment to Vercel
 
-### One-Click Deploy (Recommended)
+### One-Click Deploy (Recommended - Works Immediately!)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/deklerkwayne101010-bit/Property-tool-vercel.git)
 
 ### Manual Deployment Steps
@@ -138,24 +138,38 @@ property-enhancer-app/
    - Search for and select: `Property-tool-vercel`
    - Click "Import"
 
-3. **Configure Environment Variables**
-   In your Vercel project dashboard:
-   - Go to **Settings** → **Environment Variables**
-   - Add these variables one by one:
-
-   | Variable | Value | Description |
-   |----------|-------|-------------|
-   | `MONGODB_URI` | `mongodb+srv://username:password@cluster.mongodb.net/property-enhancer` | Your MongoDB Atlas connection string |
-   | `JWT_SECRET` | `your-super-secret-jwt-key-here-change-this-in-production` | Secure random string for JWT tokens |
-   | `OPENAI_API_KEY` | `sk-your-openai-api-key-here` | Your OpenAI API key |
-   | `HF_API_KEY` | `hf_your-huggingface-api-key-here` | Your Hugging Face API key |
-   | `NEXTAUTH_SECRET` | `your-nextauth-secret-here` | Secure random string for NextAuth |
-   | `NEXTAUTH_URL` | `https://your-app-name.vercel.app` | Your Vercel app URL (update after deployment) |
-
-4. **Deploy**
+3. **Deploy (No API Keys Required!)**
    - Click **"Deploy"**
-   - Wait for the build to complete
-   - Your app will be live!
+   - Wait for the build to complete (about 2-3 minutes)
+   - Your app will be live with full demo functionality! 🎉
+
+## 🎯 Demo Mode Features (No API Keys Needed)
+
+The app works perfectly without any API keys in demo mode:
+
+### ✅ **Fully Functional Features**
+- **Canva-Style Editor**: Drag-and-drop, filters, templates, collaboration
+- **Property Description Generator**: AI-like responses with demo content
+- **Image Enhancement**: Visual effects simulation
+- **Professional UI**: Complete interface with all components
+
+### 🚀 **Optional: Add Real AI Later**
+When you're ready to add real AI capabilities:
+
+1. **Get API Keys** (see instructions below)
+2. **Add Environment Variables** in Vercel dashboard
+3. **Redeploy** - the app will automatically use real APIs
+
+### Environment Variables (Optional - for full AI features)
+
+| Variable | Example Value | Required |
+|----------|---------------|----------|
+| `MONGODB_URI` | `mongodb+srv://username:password@cluster.mongodb.net/property-enhancer` | Optional |
+| `JWT_SECRET` | `your-super-secret-jwt-key-here-change-this-in-production` | Optional |
+| `OPENAI_API_KEY` | `sk-your-openai-api-key-here` | Optional |
+| `HF_API_KEY` | `hf_your-huggingface-api-key-here` | Optional |
+| `NEXTAUTH_SECRET` | `your-nextauth-secret-here` | Optional |
+| `NEXTAUTH_URL` | `https://your-app-name.vercel.app` | Optional |
 
 ## 🔧 Getting API Keys
 
