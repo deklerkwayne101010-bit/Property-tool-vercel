@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/demo';
 
-if (!MONGODB_URI) {
+// Only require MongoDB URI in production, allow demo mode
+if (!MONGODB_URI && process.env.NODE_ENV === 'production') {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
 }
 
@@ -19,6 +20,12 @@ if (!cached) {
 }
 
 async function dbConnect() {
+  // Skip database connection in demo mode
+  if (!process.env.MONGODB_URI || MONGODB_URI.includes('localhost') || MONGODB_URI.includes('demo')) {
+    console.log('Running in demo mode - skipping database connection');
+    return null;
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
