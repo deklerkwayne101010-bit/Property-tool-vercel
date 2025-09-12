@@ -27,7 +27,7 @@ export async function authenticateToken(request: NextRequest): Promise<{ user: u
       };
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload & { userId: string; email: string; role: string };
 
     await dbConnect();
     const user = await User.findById(decoded.userId);
@@ -62,7 +62,7 @@ export function withAuth(handler: (request: NextRequest, ...args: unknown[]) => 
     }
 
     // Add user to request
-    (request as AuthenticatedRequest).user = authResult.user as any;
+    (request as AuthenticatedRequest).user = authResult.user as { userId: string; email: string; role: string; [key: string]: unknown };
 
     return handler(request, ...args);
   };
