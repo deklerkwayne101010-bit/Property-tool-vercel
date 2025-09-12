@@ -1,5 +1,6 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
 import collaborationManager, { UserPresence } from '@/lib/collaboration-manager';
 
@@ -41,9 +42,9 @@ const CollaboratorCursors: React.FC<CollaboratorCursorsProps> = ({ canvasRef }) 
     };
 
     // Listen for collaboration events
-    collaborationManager.on('cursor-update', handleCursorUpdate);
-    collaborationManager.on('collaborator-joined', handleCollaboratorJoined);
-    collaborationManager.on('collaborator-left', handleCollaboratorLeft);
+    collaborationManager.on('cursor-update', handleCursorUpdate as any);
+    collaborationManager.on('collaborator-joined', handleCollaboratorJoined as any);
+    collaborationManager.on('collaborator-left', handleCollaboratorLeft as any);
 
     // Initialize with existing collaborators
     const initialCursors = new Map();
@@ -53,9 +54,9 @@ const CollaboratorCursors: React.FC<CollaboratorCursorsProps> = ({ canvasRef }) 
     setCursors(initialCursors);
 
     return () => {
-      collaborationManager.off('cursor-update', handleCursorUpdate);
-      collaborationManager.off('collaborator-joined', handleCollaboratorJoined);
-      collaborationManager.off('collaborator-left', handleCollaboratorLeft);
+      collaborationManager.off('cursor-update', handleCursorUpdate as any);
+      collaborationManager.off('collaborator-joined', handleCollaboratorJoined as any);
+      collaborationManager.off('collaborator-left', handleCollaboratorLeft as any);
     };
   }, []);
 

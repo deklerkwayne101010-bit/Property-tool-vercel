@@ -17,7 +17,7 @@ const PropertyDescriptionGenerator = dynamic(() => import('@/components/property
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'editor' | 'description'>('editor');
 
-  const handleSave = (canvas: any) => {
+  const handleSave = (canvas: unknown) => {
     console.log('Canvas saved:', canvas);
     // TODO: Implement save functionality
   };

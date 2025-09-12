@@ -1,4 +1,4 @@
-import { io, Socket } from 'socket.io-client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 export interface UserPresence {
   id: string;
@@ -11,16 +11,16 @@ export interface UserPresence {
 export interface CanvasEvent {
   type: 'add' | 'modify' | 'delete' | 'clear';
   objectId?: string;
-  objectData?: any;
+  objectData?: unknown;
   userId: string;
   timestamp: Date;
 }
 
 class CollaborationManager {
-  private socket: Socket | null = null;
+  private socket: unknown = null;
   private currentUser: UserPresence | null = null;
   private collaborators: Map<string, UserPresence> = new Map();
-  private eventListeners: Map<string, Function[]> = new Map();
+  private eventListeners: Map<string, ((...args: unknown[]) => void)[]> = new Map();
 
   constructor() {
     this.initializeSocket();
@@ -55,14 +55,14 @@ class CollaborationManager {
   }
 
   // Event handling
-  on(event: string, callback: Function) {
+  on(event: string, callback: (...args: unknown[]) => void) {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
     this.eventListeners.get(event)!.push(callback);
   }
 
-  off(event: string, callback: Function) {
+  off(event: string, callback: (...args: unknown[]) => void) {
     const listeners = this.eventListeners.get(event);
     if (listeners) {
       const index = listeners.indexOf(callback);

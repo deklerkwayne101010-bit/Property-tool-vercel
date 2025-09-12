@@ -1,5 +1,6 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
 import collaborationManager, { UserPresence } from '@/lib/collaboration-manager';
 
@@ -30,8 +31,8 @@ const CollaborationPanel: React.FC<CollaborationPanelProps> = ({ currentUserId }
       setCollaborators(prev => prev.filter(c => c.id !== user.id));
     };
 
-    collaborationManager.on('collaborator-joined', handleCollaboratorJoined);
-    collaborationManager.on('collaborator-left', handleCollaboratorLeft);
+    collaborationManager.on('collaborator-joined', handleCollaboratorJoined as any);
+    collaborationManager.on('collaborator-left', handleCollaboratorLeft as any);
 
     // Add some mock collaborators for demonstration
     const mockUsers: UserPresence[] = [
@@ -59,8 +60,8 @@ const CollaborationPanel: React.FC<CollaborationPanelProps> = ({ currentUserId }
     setCollaborators(collaborationManager.getCollaborators());
 
     return () => {
-      collaborationManager.off('collaborator-joined', handleCollaboratorJoined);
-      collaborationManager.off('collaborator-left', handleCollaboratorLeft);
+      collaborationManager.off('collaborator-joined', handleCollaboratorJoined as any);
+      collaborationManager.off('collaborator-left', handleCollaboratorLeft as any);
     };
   }, [currentUserId]);
 

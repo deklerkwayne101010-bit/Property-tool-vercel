@@ -71,13 +71,13 @@ const PropertyDescriptionGenerator: React.FC<PropertyDescriptionGeneratorProps> 
     'Fireplace', 'Balcony', 'Gym', 'Parking', 'Laundry Room'
   ];
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number) => {
     if (field.includes('.')) {
       const [parent, child] = field.split('.');
       setPropertyData(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof PropertyData] as any,
+          ...(prev[parent as keyof PropertyData] as Record<string, unknown>),
           [child]: value
         }
       }));

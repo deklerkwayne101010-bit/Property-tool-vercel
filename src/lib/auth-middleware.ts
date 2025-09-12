@@ -4,7 +4,11 @@ import dbConnect from './mongodb';
 import User from '@/models/User';
 
 export interface AuthenticatedRequest extends NextRequest {
-  user?: any;
+  user?: {
+    userId: string;
+    email: string;
+    role: string;
+  };
 }
 
 export async function authenticateToken(request: NextRequest): Promise<{ user: any } | { error: NextResponse }> {
@@ -47,8 +51,8 @@ export async function authenticateToken(request: NextRequest): Promise<{ user: a
   }
 }
 
-export function withAuth(handler: Function) {
-  return async (request: NextRequest, ...args: any[]) => {
+export function withAuth(handler: (request: NextRequest, ...args: unknown[]) => Promise<NextResponse> | NextResponse) {
+  return async (request: NextRequest, ...args: unknown[]) => {
     const authResult = await authenticateToken(request);
 
     if ('error' in authResult) {

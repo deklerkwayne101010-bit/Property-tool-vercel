@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-// @ts-ignore
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as fabric from 'fabric';
 import FilterPanel from './FilterPanel';
 import TemplatePanel from './TemplatePanel';
@@ -50,7 +50,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         canvas.dispose();
       }
     };
-  }, [canvasRef, width, height, fabric, canvas]);
+  }, [width, height, fabric, canvas]);
 
   const handleSelection = (e: any) => {
     // Handle object selection
@@ -180,7 +180,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 
     activeObjects.forEach((obj: any) => {
       if (obj.type === 'image') {
-        const filters = obj.filters || [];
 
         switch (filterType) {
           case 'brightness':
