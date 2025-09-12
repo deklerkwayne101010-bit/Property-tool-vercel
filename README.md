@@ -123,34 +123,59 @@ property-enhancer-app/
 
 ## 🚀 Deployment to Vercel
 
-### Option 1: One-Click Deploy
+### One-Click Deploy (Recommended)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/deklerkwayne101010-bit/Property-tool-vercel.git)
 
-### Option 2: Manual Deployment
+### Manual Deployment Steps
 
-1. **Connect to Vercel**
-   ```bash
-   # Install Vercel CLI
-   npm i -g vercel
+1. **Go to Vercel Dashboard**
+   - Visit [vercel.com](https://vercel.com)
+   - Sign in with your GitHub account
 
-   # Login to Vercel
-   vercel login
-   ```
-
-2. **Deploy**
-   ```bash
-   # Deploy to production
-   vercel --prod
-   ```
+2. **Import Project**
+   - Click "New Project"
+   - Import from GitHub
+   - Search for and select: `Property-tool-vercel`
+   - Click "Import"
 
 3. **Configure Environment Variables**
-   In your Vercel dashboard, add these environment variables:
-   - `MONGODB_URI`: Your MongoDB connection string
-   - `JWT_SECRET`: A secure random string
-   - `OPENAI_API_KEY`: Your OpenAI API key
-   - `HF_API_KEY`: Your Hugging Face API key
-   - `NEXTAUTH_SECRET`: A secure random string
-   - `NEXTAUTH_URL`: Your Vercel app URL
+   In your Vercel project dashboard:
+   - Go to **Settings** → **Environment Variables**
+   - Add these variables one by one:
+
+   | Variable | Value | Description |
+   |----------|-------|-------------|
+   | `MONGODB_URI` | `mongodb+srv://username:password@cluster.mongodb.net/property-enhancer` | Your MongoDB Atlas connection string |
+   | `JWT_SECRET` | `your-super-secret-jwt-key-here-change-this-in-production` | Secure random string for JWT tokens |
+   | `OPENAI_API_KEY` | `sk-your-openai-api-key-here` | Your OpenAI API key |
+   | `HF_API_KEY` | `hf_your-huggingface-api-key-here` | Your Hugging Face API key |
+   | `NEXTAUTH_SECRET` | `your-nextauth-secret-here` | Secure random string for NextAuth |
+   | `NEXTAUTH_URL` | `https://your-app-name.vercel.app` | Your Vercel app URL (update after deployment) |
+
+4. **Deploy**
+   - Click **"Deploy"**
+   - Wait for the build to complete
+   - Your app will be live!
+
+## 🔧 Getting API Keys
+
+### MongoDB Atlas
+1. Go to [MongoDB Atlas](https://www.mongodb.com/atlas)
+2. Create a free account
+3. Create a new cluster
+4. Get your connection string from **Connect** → **Connect your application**
+
+### OpenAI
+1. Go to [OpenAI Platform](https://platform.openai.com)
+2. Create an account
+3. Go to **API Keys** section
+4. Create a new API key
+
+### Hugging Face
+1. Go to [Hugging Face](https://huggingface.co)
+2. Create an account
+3. Go to **Settings** → **Access Tokens**
+4. Create a new token
 
 ## 🔧 API Endpoints
 

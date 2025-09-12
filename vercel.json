@@ -1,13 +1,5 @@
 {
   "version": 2,
-  "env": {
-    "MONGODB_URI": "@mongodb_uri",
-    "JWT_SECRET": "@jwt_secret",
-    "OPENAI_API_KEY": "@openai_api_key",
-    "HF_API_KEY": "@hf_api_key",
-    "NEXTAUTH_SECRET": "@nextauth_secret",
-    "NEXTAUTH_URL": "@nextauth_url"
-  },
   "functions": {
     "src/app/api/**/*.ts": {
       "maxDuration": 30
