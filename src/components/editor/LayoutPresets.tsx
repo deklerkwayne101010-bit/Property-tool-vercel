@@ -11,13 +11,34 @@ interface LayoutPreset {
   category: string;
 }
 
+interface ElementProperties {
+  // Rectangle properties
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  rx?: number;
+  opacity?: number;
+
+  // Text properties
+  text?: string;
+  fontSize?: number;
+  fontWeight?: string | number;
+  fontFamily?: string;
+  textAlign?: 'left' | 'center' | 'right';
+  lineHeight?: number;
+
+  // Common properties
+  selectable?: boolean;
+  evented?: boolean;
+}
+
 interface LayoutElement {
   type: 'rectangle' | 'text' | 'image' | 'icon';
   x: number;
   y: number;
   width: number;
   height: number;
-  properties?: any;
+  properties?: ElementProperties;
 }
 
 interface LayoutPresetsProps {
