@@ -89,8 +89,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 
         fabricCanvas.add(vLine);
         fabricCanvas.add(hLine);
-        fabricCanvas.sendBackwards(vLine);
-        fabricCanvas.sendBackwards(hLine);
+        fabricCanvas.sendToBack(vLine);
+        fabricCanvas.sendToBack(hLine);
       }
 
       setCanvas(fabricCanvas);
@@ -441,7 +441,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         icon: '⬇️',
         action: () => {
           if (target) {
-            canvas.sendBackwards(target);
+            canvas.sendToBack(target);
             canvas.renderAll();
           }
         },
