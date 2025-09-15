@@ -14,10 +14,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: '🏠' },
-    { name: 'Properties', href: '/properties', icon: '🏘️' },
-    { name: 'CRM', href: '/crm', icon: '👥' },
-    { name: 'Calendar', href: '/calendar', icon: '📅' },
-    { name: 'Analytics', href: '/analytics', icon: '📊' },
+    { name: 'Flyer Builder', href: '/#editor', icon: '🎨' },
+    { name: 'AI Description', href: '/#description', icon: '🤖' },
+    { name: 'Templates', href: '/#templates', icon: '📋' },
+    { name: 'Settings', href: '/#settings', icon: '⚙️' },
   ];
 
   return (
