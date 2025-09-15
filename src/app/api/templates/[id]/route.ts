@@ -5,7 +5,7 @@ import dbConnect from '@/lib/mongodb';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -15,7 +15,7 @@ export async function GET(
     }
 
     const user = authResult.user as { userId: string; email: string; role: string };
-    const { id } = params;
+    const { id } = await params;
 
     await dbConnect();
 

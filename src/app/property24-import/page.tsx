@@ -81,7 +81,7 @@ export default function Property24ImportPage() {
               <div className="mt-2 text-sm text-blue-700">
                 <ol className="list-decimal list-inside space-y-1">
                   <li>Paste any Property24 property URL in the field above</li>
-                  <li>Click "Import Property" to automatically extract all data</li>
+                  <li>Click &ldquo;Import Property&rdquo; to automatically extract all data</li>
                   <li>Review the imported information and save to your database</li>
                   <li>Use the data for marketing materials, CRM, or property listings</li>
                 </ol>
