@@ -54,7 +54,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
       fabricCanvas.on('mouse:down', (options: any) => {
         if (options.e.button === 2) { // Right click
           const target = options.target;
-          if (target) {
+          if (target && fabricCanvas.setActiveObject) {
             fabricCanvas.setActiveObject(target);
             fabricCanvas.renderAll();
           }
@@ -409,7 +409,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         label: 'Duplicate',
         icon: '📋',
         action: () => {
-          if (target) {
+          if (target && target.clone) {
             target.clone((cloned: any) => {
               cloned.set({
                 left: (cloned.left || 0) + 20,
@@ -428,7 +428,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         label: 'Bring to Front',
         icon: '⬆️',
         action: () => {
-          if (target) {
+          if (target && canvas.bringToFront) {
             canvas.bringToFront(target);
             canvas.renderAll();
           }
@@ -440,7 +440,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         label: 'Send to Back',
         icon: '⬇️',
         action: () => {
-          if (target) {
+          if (target && canvas.sendToBack) {
             canvas.sendToBack(target);
             canvas.renderAll();
           }
@@ -453,7 +453,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         label: 'Delete',
         icon: '🗑️',
         action: () => {
-          if (target) {
+          if (target && canvas.remove) {
             canvas.remove(target);
             canvas.renderAll();
           }
