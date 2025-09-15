@@ -2,8 +2,6 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import Link from 'next/link';
-import Header from '@/components/layout/Header';
 import Card, { Header as CardHeader, Content as CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 
@@ -63,9 +61,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Modern Header */}
-      <Header />
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
@@ -78,12 +73,12 @@ export default function Home() {
           </p>
 
           {/* Quick Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12 max-w-lg mx-auto">
             <Button
               variant="primary"
               size="lg"
               onClick={() => setActiveFeature('description')}
-              className="px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+              className="w-full sm:w-auto px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 min-h-[60px] flex items-center justify-center"
             >
               🚀 Generate AI Description
             </Button>
@@ -91,7 +86,7 @@ export default function Home() {
               variant="secondary"
               size="lg"
               onClick={() => setActiveFeature('editor')}
-              className="px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+              className="w-full sm:w-auto px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 min-h-[60px] flex items-center justify-center"
             >
               🎨 Open Template Editor
             </Button>
@@ -444,7 +439,7 @@ export default function Home() {
               <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
                 Join thousands of real estate professionals who have already revolutionized their marketing workflow with PropertyPro
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Button variant="primary" size="lg" className="px-8">
                   Start Free Trial
                 </Button>
