@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -11,30 +11,39 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const pathname = usePathname();
+  const [currentHash, setCurrentHash] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setCurrentHash(window.location.hash || '');
+
+    const handleHashChange = () => {
+      setCurrentHash(window.location.hash || '');
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const navigation = [
-    { name: 'Dashboard', hash: '', icon: '🏠' },
-    { name: 'Flyer Builder', hash: '#editor', icon: '🎨' },
-    { name: 'AI Description', hash: '#description', icon: '🤖' },
-    { name: 'CRM & Pipeline', hash: '#crm', icon: '👥' },
-    { name: 'Social Media', hash: '#social', icon: '📱' },
+    { name: 'Dashboard', href: '/', icon: '🏠' },
+    { name: 'Property24 Import', href: '/property24-import', icon: '🏠' },
+    { name: 'Flyer Builder', href: '/templates/editor', icon: '🎨' },
+    { name: 'AI Description', href: '/property/description', icon: '🤖' },
+    { name: 'CRM & Pipeline', href: '/crm', icon: '👥' },
+    { name: 'Social Media', href: '/social-media', icon: '📱' },
+    { name: 'Templates', href: '/templates/sa-library', icon: '🇿🇦' },
+    { name: 'Sequences', href: '/sequences', icon: '📧' },
+    { name: 'Analytics', href: '/analytics', icon: '📊' },
   ];
 
-  const handleNavigation = (hash: string) => {
-    // Update URL hash to trigger page state changes
-    if (typeof window !== 'undefined') {
-      window.location.hash = hash;
-
-      // Close sidebar on mobile after navigation
-      if (window.innerWidth < 1024) {
-        onToggle();
-      }
+  const handleNavigation = (href: string) => {
+    // Close sidebar on mobile after navigation
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      onToggle();
     }
-  };
-
-  const getCurrentHash = () => {
-    if (typeof window === 'undefined') return '';
-    return window.location.hash || '';
+    // Navigation will be handled by Next.js Link component
   };
 
   return (
@@ -83,23 +92,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
             {navigation.map((item) => {
-              const isActive = getCurrentHash() === item.hash;
+              const isActive = pathname === item.href;
               return (
-                <button
-                  key={item.name}
-                  onClick={() => handleNavigation(item.hash)}
-                  className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group ${
-                    isActive
-                      ? 'text-red-600 bg-red-50 border-r-2 border-red-600'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className="mr-3 text-lg">{item.icon}</span>
-                  <span className="flex-1 text-left">{item.name}</span>
-                  {isActive && (
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  )}
-                </button>
+                <Link key={item.name} href={item.href}>
+                  <div
+                    onClick={() => handleNavigation(item.href)}
+                    className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group cursor-pointer ${
+                      isActive
+                        ? 'text-red-600 bg-red-50 border-r-2 border-red-600'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="mr-3 text-lg">{item.icon}</span>
+                    <span className="flex-1 text-left">{item.name}</span>
+                    {isActive && (
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    )}
+                  </div>
+                </Link>
               );
             })}
           </nav>

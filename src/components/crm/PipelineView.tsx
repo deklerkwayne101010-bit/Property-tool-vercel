@@ -27,9 +27,9 @@ const PipelineView: React.FC<PipelineViewProps> = ({
   onContactClick
 }) => {
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'ZAR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);

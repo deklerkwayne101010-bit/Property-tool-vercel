@@ -24,13 +24,21 @@ interface ContactCardProps {
   onEdit: (contact: Contact) => void;
   onDelete: (id: string) => void;
   onMoveToNextStage: (id: string) => void;
+  onViewDetails?: (id: string) => void;
+  isSelected?: boolean;
+  onSelectionChange?: (id: string, selected: boolean) => void;
+  showSelection?: boolean;
 }
 
 const ContactCard: React.FC<ContactCardProps> = ({
   contact,
   onEdit,
   onDelete,
-  onMoveToNextStage
+  onMoveToNextStage,
+  onViewDetails,
+  isSelected = false,
+  onSelectionChange,
+  showSelection = false
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -59,18 +67,28 @@ const ContactCard: React.FC<ContactCardProps> = ({
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'ZAR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
   };
 
   return (
-    <Card variant="default" hover className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+    <Card variant="default" hover className={`transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`}>
       <div className="flex items-start justify-between mb-6 pb-4 border-b border-gray-100">
         <div className="flex items-center space-x-4">
+          {showSelection && (
+            <div className="flex-shrink-0">
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(e) => onSelectionChange?.(contact.id, e.target.checked)}
+                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+            </div>
+          )}
           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm">
             {contact.name.split(' ').map(n => n[0]).join('').toUpperCase()}
           </div>
@@ -145,7 +163,19 @@ const ContactCard: React.FC<ContactCardProps> = ({
       )}
 
       <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-2">
+          {onViewDetails && (
+            <button
+              onClick={() => onViewDetails(contact.id)}
+              className="inline-flex items-center px-4 py-2 border border-blue-300 rounded-lg text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 hover:border-blue-400 transition-all duration-200 shadow-sm"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              View Details
+            </button>
+          )}
           <button
             onClick={() => onEdit(contact)}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm"

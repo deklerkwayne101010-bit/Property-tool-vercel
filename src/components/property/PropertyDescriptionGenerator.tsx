@@ -1,19 +1,46 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface PropertyData {
+  // Basic Information
   title: string;
+  propertyType: string;
+  listingType: 'sale' | 'rent';
+  price: number;
   bedrooms: number;
   bathrooms: number;
   squareFootage: number;
+  erfSize: number;
+  yearBuilt: number;
+
+  // Location Details
   location: {
     address: string;
+    suburb: string;
     city: string;
-    state: string;
+    province: string;
+    postalCode: string;
   };
+
+  // Property Features
   amenities: string[];
   uniqueFeatures: string[];
+  propertyCondition: string;
+  parking: string;
+  garden: string;
+
+  // Market Positioning
+  marketPosition: string;
+  targetBuyer: string;
+  uniqueSellingPoints: string[];
+
+  // Additional Details
+  petFriendly: boolean;
+  furnished: boolean;
+  waterIncluded: boolean;
+  electricityIncluded: boolean;
+  internetIncluded: boolean;
 }
 
 interface PropertyDescriptionGeneratorProps {
@@ -23,55 +50,179 @@ interface PropertyDescriptionGeneratorProps {
 const PropertyDescriptionGenerator: React.FC<PropertyDescriptionGeneratorProps> = ({
   onDescriptionGenerated
 }) => {
+  const [currentStep, setCurrentStep] = useState<number>(1);
   const [propertyData, setPropertyData] = useState<PropertyData>({
     title: '',
+    propertyType: '',
+    listingType: 'sale',
+    price: 0,
     bedrooms: 0,
     bathrooms: 0,
     squareFootage: 0,
+    erfSize: 0,
+    yearBuilt: 0,
     location: {
       address: '',
+      suburb: '',
       city: '',
-      state: ''
+      province: '',
+      postalCode: ''
     },
     amenities: [],
-    uniqueFeatures: []
+    uniqueFeatures: [],
+    propertyCondition: '',
+    parking: '',
+    garden: '',
+    marketPosition: '',
+    targetBuyer: '',
+    uniqueSellingPoints: [],
+    petFriendly: false,
+    furnished: false,
+    waterIncluded: false,
+    electricityIncluded: false,
+    internetIncluded: false
   });
 
-  const [tone, setTone] = useState<string>('professional');
-  const [platform, setPlatform] = useState<string>('Property24');
-  const [keywords, setKeywords] = useState<string>('');
-  const [length, setLength] = useState<string>('medium');
+  const [generationSettings, setGenerationSettings] = useState({
+    tone: 'professional',
+    platform: 'Property24',
+    keywords: '',
+    length: 'medium',
+    includePrice: true,
+    focusPoints: [] as string[],
+    callToAction: true
+  });
+
+  const [tone, setTone] = useState('professional');
+  const [platform, setPlatform] = useState('Property24');
+  const [length, setLength] = useState('medium');
+  const [keywords, setKeywords] = useState('');
+
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [generatedDescription, setGeneratedDescription] = useState<string>('');
+  const [generatedDescriptions, setGeneratedDescriptions] = useState<GeneratedDescription[]>([]);
+  const [selectedDescription, setSelectedDescription] = useState<number>(0);
+  const [savedDescriptions, setSavedDescriptions] = useState<GeneratedDescription[]>([]);
 
-  const tones = [
-    { value: 'professional', label: 'Professional', description: 'Formal and trustworthy' },
-    { value: 'casual', label: 'Casual', description: 'Friendly and approachable' },
-    { value: 'enthusiastic', label: 'Enthusiastic', description: 'Energetic and exciting' },
-    { value: 'luxury', label: 'Luxury', description: 'Premium and sophisticated' }
+  interface GeneratedDescription {
+    id: number;
+    description: string;
+    wordCount: number;
+    platform: string;
+    tone: string;
+    timestamp: string;
+    propertyData: PropertyData;
+    settings: typeof generationSettings;
+  }
+
+  // Computed values
+  const generatedDescription = generatedDescriptions[selectedDescription]?.description || '';
+
+  // Property Types for South African Market
+  const propertyTypes = [
+    { value: 'house', label: 'House', icon: '🏠', description: 'Standalone family home' },
+    { value: 'apartment', label: 'Apartment', icon: '🏢', description: 'Modern apartment living' },
+    { value: 'townhouse', label: 'Townhouse', icon: '🏘️', description: 'Townhouse complex' },
+    { value: 'duplex', label: 'Duplex', icon: '🏘️', description: 'Dual living spaces' },
+    { value: 'cottage', label: 'Cottage', icon: '🏡', description: 'Charming cottage' },
+    { value: 'vacant-land', label: 'Vacant Land', icon: '🌳', description: 'Development opportunity' }
   ];
 
-  const platforms = [
-    { value: 'Property24', label: 'Property24' },
-    { value: 'Zillow', label: 'Zillow' },
-    { value: 'Rightmove', label: 'Rightmove' },
-    { value: 'Facebook Marketplace', label: 'Facebook Marketplace' },
-    { value: 'Craigslist', label: 'Craigslist' }
+  const listingTypes = [
+    { value: 'sale', label: 'For Sale', icon: '💰' },
+    { value: 'rent', label: 'To Rent', icon: '🔑' }
   ];
 
-  const lengthOptions = [
-    { value: 'short', label: 'Short (50-100 words)', words: '50-100' },
-    { value: 'medium', label: 'Medium (100-200 words)', words: '100-200' },
-    { value: 'long', label: 'Long (200-300 words)', words: '200-300' }
+  const southAfricanCities = [
+    'Cape Town', 'Johannesburg', 'Durban', 'Pretoria', 'Port Elizabeth',
+    'Bloemfontein', 'East London', 'Pietermaritzburg', 'Benoni', 'Vereeniging'
+  ];
+
+  const provinces = [
+    'Western Cape', 'Gauteng', 'KwaZulu-Natal', 'Eastern Cape',
+    'Free State', 'North West', 'Mpumalanga', 'Limpopo', 'Northern Cape'
   ];
 
   const commonAmenities = [
     'Swimming Pool', 'Garden', 'Garage', 'Air Conditioning', 'Security System',
     'Walk-in Closet', 'Hardwood Floors', 'Stainless Steel Appliances', 'Granite Countertops',
-    'Fireplace', 'Balcony', 'Gym', 'Parking', 'Laundry Room'
+    'Fireplace', 'Balcony', 'Gym', 'Parking', 'Laundry Room', 'Study', 'Patio',
+    'Built-in Cupboards', 'Solar Panels', 'Alarm System', 'Intercom', 'Braai Area'
   ];
 
-  const handleInputChange = (field: string, value: string | number) => {
+  const propertyConditions = [
+    { value: 'excellent', label: 'Excellent', description: 'Like new condition' },
+    { value: 'good', label: 'Good', description: 'Well maintained' },
+    { value: 'fair', label: 'Fair', description: 'Needs some updates' },
+    { value: 'needs-work', label: 'Needs Work', description: 'Renovation opportunity' }
+  ];
+
+  const parkingOptions = [
+    { value: 'double-garage', label: 'Double Garage' },
+    { value: 'single-garage', label: 'Single Garage' },
+    { value: 'carport', label: 'Carport' },
+    { value: 'open-parking', label: 'Open Parking' },
+    { value: 'no-parking', label: 'No Parking' }
+  ];
+
+  const gardenOptions = [
+    { value: 'large-garden', label: 'Large Garden' },
+    { value: 'medium-garden', label: 'Medium Garden' },
+    { value: 'small-garden', label: 'Small Garden' },
+    { value: 'courtyard', label: 'Courtyard' },
+    { value: 'no-garden', label: 'No Garden' }
+  ];
+
+  const marketPositions = [
+    { value: 'luxury', label: 'Luxury', description: 'High-end market positioning' },
+    { value: 'premium', label: 'Premium', description: 'Upscale neighborhood' },
+    { value: 'family', label: 'Family', description: 'Perfect for families' },
+    { value: 'investment', label: 'Investment', description: 'Great investment opportunity' },
+    { value: 'first-home', label: 'First Home', description: 'Affordable entry point' },
+    { value: 'retirement', label: 'Retirement', description: 'Peaceful retirement living' }
+  ];
+
+  const targetBuyers = [
+    { value: 'young-professional', label: 'Young Professional', description: 'Career-focused individuals' },
+    { value: 'young-family', label: 'Young Family', description: 'Growing families' },
+    { value: 'empty-nesters', label: 'Empty Nesters', description: 'Downsizing couples' },
+    { value: 'investor', label: 'Investor', description: 'Property investors' },
+    { value: 'retiree', label: 'Retiree', description: 'Retirement planning' },
+    { value: 'expat', label: 'Expat', description: 'International buyers' }
+  ];
+
+  const tones = [
+    { value: 'professional', label: 'Professional', description: 'Formal and trustworthy', icon: '👔' },
+    { value: 'warm', label: 'Warm & Inviting', description: 'Friendly and approachable', icon: '🤗' },
+    { value: 'enthusiastic', label: 'Enthusiastic', description: 'Energetic and exciting', icon: '⚡' },
+    { value: 'luxury', label: 'Luxury', description: 'Premium and sophisticated', icon: '💎' },
+    { value: 'storytelling', label: 'Storytelling', description: 'Emotional connection', icon: '📖' }
+  ];
+
+  const platforms = [
+    { value: 'Property24', label: 'Property24', description: 'South Africa\'s #1 property portal' },
+    { value: 'PrivateProperty', label: 'Private Property', description: 'Luxury property specialist' },
+    { value: 'Facebook', label: 'Facebook Marketplace', description: 'Local community reach' },
+    { value: 'WhatsApp', label: 'WhatsApp Groups', description: 'Direct buyer communication' },
+    { value: 'Email', label: 'Email Marketing', description: 'Targeted buyer outreach' }
+  ];
+
+  const lengthOptions = [
+    { value: 'short', label: 'Short (50-100 words)', words: '50-100', description: 'Quick overview' },
+    { value: 'medium', label: 'Medium (100-200 words)', words: '100-200', description: 'Balanced detail' },
+    { value: 'long', label: 'Long (200-300 words)', words: '200-300', description: 'Comprehensive description' },
+    { value: 'detailed', label: 'Detailed (300-500 words)', words: '300-500', description: 'Complete property story' }
+  ];
+
+  const focusPoints = [
+    { value: 'location', label: 'Location Benefits', description: 'Emphasize neighborhood advantages' },
+    { value: 'lifestyle', label: 'Lifestyle Appeal', description: 'Highlight living experience' },
+    { value: 'investment', label: 'Investment Potential', description: 'Focus on financial benefits' },
+    { value: 'family', label: 'Family Friendly', description: 'Perfect for families' },
+    { value: 'luxury', label: 'Luxury Features', description: 'Premium amenities' },
+    { value: 'modern', label: 'Modern Living', description: 'Contemporary lifestyle' }
+  ];
+
+  const handleInputChange = (field: string, value: string | number | boolean) => {
     if (field.includes('.')) {
       const [parent, child] = field.split('.');
       setPropertyData(prev => ({
@@ -115,6 +266,23 @@ const PropertyDescriptionGenerator: React.FC<PropertyDescriptionGeneratorProps> 
     }));
   };
 
+  const handleSellingPointAdd = () => {
+    const point = prompt('Enter a unique selling point:');
+    if (point && point.trim()) {
+      setPropertyData(prev => ({
+        ...prev,
+        uniqueSellingPoints: [...prev.uniqueSellingPoints, point.trim()]
+      }));
+    }
+  };
+
+  const handleSellingPointRemove = (index: number) => {
+    setPropertyData(prev => ({
+      ...prev,
+      uniqueSellingPoints: prev.uniqueSellingPoints.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleGenerate = async () => {
     if (!propertyData.title || !propertyData.location.city) {
       alert('Please fill in at least the property title and city.');
@@ -123,29 +291,75 @@ const PropertyDescriptionGenerator: React.FC<PropertyDescriptionGeneratorProps> 
 
     setIsGenerating(true);
 
-    // Simulate API call with demo response
-    setTimeout(() => {
-      const demoDescriptions = {
-        professional: `Discover this exceptional ${propertyData.bedrooms} bedroom, ${propertyData.bathrooms} bathroom property located in the heart of ${propertyData.location.city}. This ${propertyData.squareFootage} square foot residence offers ${propertyData.amenities.slice(0, 3).join(', ')} and much more. Perfect for discerning buyers seeking quality and comfort.`,
-        casual: `Check out this awesome ${propertyData.bedrooms} bedroom, ${propertyData.bathrooms} bathroom home in ${propertyData.location.city}! With ${propertyData.squareFootage} square feet of living space, you'll love the ${propertyData.amenities.slice(0, 3).join(', ')} that make this place special. It's a great spot for anyone looking for their dream home!`,
-        enthusiastic: `WOW! This incredible ${propertyData.bedrooms} bedroom, ${propertyData.bathrooms} bathroom property in ${propertyData.location.city} is absolutely amazing! Boasting ${propertyData.squareFootage} square feet of fantastic living space with ${propertyData.amenities.slice(0, 3).join(', ')}, this home is ready for you to create unforgettable memories! Don't miss out on this opportunity!`,
-        luxury: `Indulge in the epitome of luxury living with this exquisite ${propertyData.bedrooms} bedroom, ${propertyData.bathrooms} bathroom estate in ${propertyData.location.city}. Spanning ${propertyData.squareFootage} square feet, this residence features premium ${propertyData.amenities.slice(0, 3).join(', ')} and unparalleled craftsmanship throughout. A rare opportunity for the most discerning buyer.`
-      };
+    try {
+      const response = await fetch('/api/property/generate-description', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          propertyData,
+          ...generationSettings
+        }),
+      });
 
-      const description = demoDescriptions[tone as keyof typeof demoDescriptions] || demoDescriptions.professional;
-      setGeneratedDescription(description);
-
-      if (onDescriptionGenerated) {
-        onDescriptionGenerated(description);
+      if (!response.ok) {
+        throw new Error('Failed to generate description');
       }
 
+      const result = await response.json();
+
+      const newDescription = {
+        id: Date.now(),
+        description: result.description,
+        wordCount: result.wordCount,
+        platform: result.platform,
+        tone: result.tone,
+        timestamp: new Date().toISOString(),
+        propertyData: { ...propertyData },
+        settings: { ...generationSettings }
+      };
+
+      setGeneratedDescriptions(prev => [newDescription, ...prev]);
+      setSelectedDescription(0);
+
+      if (onDescriptionGenerated) {
+        onDescriptionGenerated(result.description);
+      }
+    } catch (error) {
+      console.error('Error generating description:', error);
+      alert('Failed to generate description. Please try again.');
+    } finally {
       setIsGenerating(false);
-    }, 2000); // 2 second delay to simulate API call
+    }
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedDescription);
+  const copyToClipboard = (description?: string) => {
+    const textToCopy = description || (generatedDescriptions[selectedDescription]?.description || '');
+    navigator.clipboard.writeText(textToCopy);
     alert('Description copied to clipboard!');
+  };
+
+  const saveDescription = () => {
+    const currentDescription = generatedDescriptions[selectedDescription];
+    if (currentDescription) {
+      setSavedDescriptions(prev => [currentDescription, ...prev]);
+      alert('Description saved successfully!');
+    }
+  };
+
+  const loadSavedDescription = (index: number) => {
+    const saved = savedDescriptions[index];
+    if (saved) {
+      setPropertyData(saved.propertyData);
+      setGenerationSettings(saved.settings);
+      setGeneratedDescriptions([saved]);
+      setSelectedDescription(0);
+    }
+  };
+
+  const deleteSavedDescription = (index: number) => {
+    setSavedDescriptions(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -226,10 +440,10 @@ const PropertyDescriptionGenerator: React.FC<PropertyDescriptionGeneratorProps> 
                   />
                   <input
                     type="text"
-                    value={propertyData.location.state}
-                    onChange={(e) => handleInputChange('location.state', e.target.value)}
+                    value={propertyData.location.province}
+                    onChange={(e) => handleInputChange('location.province', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="State/Province"
+                    placeholder="Province"
                   />
                 </div>
               </div>
@@ -376,7 +590,7 @@ const PropertyDescriptionGenerator: React.FC<PropertyDescriptionGeneratorProps> 
               <h3 className="text-lg font-semibold">Generated Description</h3>
               {generatedDescription && (
                 <button
-                  onClick={copyToClipboard}
+                  onClick={() => copyToClipboard()}
                   className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
                 >
                   Copy

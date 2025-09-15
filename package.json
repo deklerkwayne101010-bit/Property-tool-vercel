@@ -10,19 +10,20 @@
   },
   "dependencies": {
     "@huggingface/inference": "^4.8.0",
+    "@sendgrid/mail": "^8.1.5",
+    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
-    "express": "^5.1.0",
+    "cheerio": "^1.1.2",
     "fabric": "^6.7.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.1",
     "multer": "^2.0.2",
     "next": "15.5.3",
+    "nodemailer": "^7.0.6",
     "openai": "^5.20.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "sharp": "^0.34.3",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1"
+    "twilio": "^5.9.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -30,6 +31,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

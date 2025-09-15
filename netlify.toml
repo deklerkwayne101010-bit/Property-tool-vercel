@@ -1,6 +1,7 @@
 [build]
   publish = ".next"
   command = "npm run build"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -34,3 +35,16 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Environment variables for Netlify functions
+[functions]
+  node_bundler = "esbuild"
+
+# Build hooks for database setup
+[build.hooks]
+  prebuild = "echo 'Setting up build environment...'"
+
+# Edge functions for better performance
+[[edge_functions]]
+  function = "auth-middleware"
+  path = "/api/*"
