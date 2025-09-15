@@ -13,12 +13,29 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const pathname = usePathname();
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: '🏠' },
-    { name: 'Flyer Builder', href: '/#editor', icon: '🎨' },
-    { name: 'AI Description', href: '/#description', icon: '🤖' },
-    { name: 'Templates', href: '/#templates', icon: '📋' },
-    { name: 'Settings', href: '/#settings', icon: '⚙️' },
+    { name: 'Dashboard', hash: '', icon: '🏠' },
+    { name: 'Flyer Builder', hash: '#editor', icon: '🎨' },
+    { name: 'AI Description', hash: '#description', icon: '🤖' },
+    { name: 'CRM & Pipeline', hash: '#crm', icon: '👥' },
+    { name: 'Social Media', hash: '#social', icon: '📱' },
   ];
+
+  const handleNavigation = (hash: string) => {
+    // Update URL hash to trigger page state changes
+    if (typeof window !== 'undefined') {
+      window.location.hash = hash;
+
+      // Close sidebar on mobile after navigation
+      if (window.innerWidth < 1024) {
+        onToggle();
+      }
+    }
+  };
+
+  const getCurrentHash = () => {
+    if (typeof window === 'undefined') return '';
+    return window.location.hash || '';
+  };
 
   return (
     <>
@@ -66,29 +83,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
             {navigation.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = getCurrentHash() === item.hash;
               return (
-                <Link
+                <button
                   key={item.name}
-                  href={item.href}
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group ${
+                  onClick={() => handleNavigation(item.hash)}
+                  className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group ${
                     isActive
                       ? 'text-red-600 bg-red-50 border-r-2 border-red-600'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
-                  onClick={() => {
-                    // Close sidebar on mobile after navigation
-                    if (window.innerWidth < 1024) {
-                      onToggle();
-                    }
-                  }}
                 >
                   <span className="mr-3 text-lg">{item.icon}</span>
-                  <span className="flex-1">{item.name}</span>
+                  <span className="flex-1 text-left">{item.name}</span>
                   {isActive && (
                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                   )}
-                </Link>
+                </button>
               );
             })}
           </nav>

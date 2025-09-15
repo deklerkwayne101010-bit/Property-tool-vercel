@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Card, { Header as CardHeader, Content as CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 
@@ -48,6 +48,40 @@ const SocialMediaScheduler = dynamic(() => import('@/components/social/SocialMed
 
 export default function Home() {
   const [activeFeature, setActiveFeature] = useState<'editor' | 'description' | 'crm' | 'social' | null>(null);
+
+  // Listen for hash changes to update active feature
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      switch (hash) {
+        case '#editor':
+          setActiveFeature('editor');
+          break;
+        case '#description':
+          setActiveFeature('description');
+          break;
+        case '#crm':
+          setActiveFeature('crm');
+          break;
+        case '#social':
+          setActiveFeature('social');
+          break;
+        default:
+          setActiveFeature(null);
+          break;
+      }
+    };
+
+    // Check initial hash on mount
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
 
   const handleSave = (canvas: unknown) => {
     console.log('Canvas saved:', canvas);
