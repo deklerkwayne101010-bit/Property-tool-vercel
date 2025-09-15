@@ -47,7 +47,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -57,7 +57,7 @@ export async function PUT(
     }
 
     const user = authResult.user as { userId: string; email: string; role: string };
-    const { id } = params;
+    const { id } = await params;
     const updateData = await request.json();
 
     await dbConnect();
@@ -112,7 +112,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -122,7 +122,7 @@ export async function DELETE(
     }
 
     const user = authResult.user as { userId: string; email: string; role: string };
-    const { id } = params;
+    const { id } = await params;
 
     await dbConnect();
 
