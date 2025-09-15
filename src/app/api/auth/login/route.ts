@@ -49,7 +49,12 @@ export async function POST(request: NextRequest) {
       email: user.email,
       name: user.name,
       role: user.role,
-      settings: user.settings
+      credits: user.credits,
+      subscription: user.subscription,
+      profile: user.profile,
+      settings: user.settings,
+      usage: user.usage,
+      isEmailVerified: user.isEmailVerified
     };
 
     return NextResponse.json({

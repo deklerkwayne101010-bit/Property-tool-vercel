@@ -1,26 +1,41 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
-  outputFileTracingRoot: path.join(process.cwd()),
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Handle long file paths on Windows
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-      };
-    }
+  // Disable static optimization for API routes
+  experimental: {
+    serverComponentsExternalPackages: [],
+  },
 
-    // Fix Windows file system issues
-    if (process.platform === 'win32') {
-      config.watchOptions = {
-        ...config.watchOptions,
-        ignored: /node_modules/,
-      };
-    }
+  // Configure for Netlify deployment
+  output: 'standalone',
 
-    return config;
+  // Image optimization settings
+  images: {
+    unoptimized: true, // Required for Netlify
+  },
+
+  // Environment variables
+  env: {
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  },
+
+  // Headers for security
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
+      },
+    ];
   },
 };
 

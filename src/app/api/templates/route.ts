@@ -1,118 +1,156 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateToken } from '@/lib/auth-middleware';
-import Template from '@/models/Template';
+import jwt from 'jsonwebtoken';
 import dbConnect from '@/lib/mongodb';
+import Template from '@/models/Template';
 
-export async function GET(request: NextRequest) {
+async function authenticateUser(request: NextRequest) {
   try {
-    // Check authentication
-    const authResult = await authenticateToken(request);
-    if ('error' in authResult) {
-      return authResult.error;
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return null;
     }
 
-    const user = authResult.user as { userId: string; email: string; role: string };
-    const { searchParams } = new URL(request.url);
-
-    const channel = searchParams.get('channel');
-    const category = searchParams.get('category');
-    const isActive = searchParams.get('isActive');
-    const search = searchParams.get('search');
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
 
     await dbConnect();
+    return decoded.userId;
+  } catch (error) {
+    return null;
+  }
+}
 
-    // Build query
-    const query: any = { agentId: user.userId };
+// GET /api/templates - Get user's templates
+export async function GET(request: NextRequest) {
+  try {
+    const userId = await authenticateUser(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    if (channel) query.channel = channel;
-    if (category) query.category = category;
-    if (isActive !== null) query.isActive = isActive === 'true';
-    if (search) {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    const search = searchParams.get('search');
+    const isPublic = searchParams.get('public') === 'true';
+
+    let query: any = {};
+
+    if (isPublic) {
+      query.isPublic = true;
+    } else {
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { tags: { $in: [new RegExp(search, 'i')] } }
+        { userId },
+        { isPublic: true }
       ];
     }
 
+    if (category) {
+      query.category = category;
+    }
+
+    if (search) {
+      query.$text = { $search: search };
+    }
+
     const templates = await Template.find(query)
+      .populate('userId', 'name')
       .sort({ updatedAt: -1 })
-      .lean();
+      .select('-versions'); // Exclude versions for performance
 
     return NextResponse.json({
-      success: true,
-      templates
+      templates: templates.map(template => ({
+        id: template._id,
+        name: template.name,
+        description: template.description,
+        category: template.category,
+        thumbnail: template.thumbnail,
+        tags: template.tags,
+        isPublic: template.isPublic,
+        usageCount: template.usageCount,
+        rating: template.rating,
+        reviews: template.reviews,
+        metadata: template.metadata,
+        createdAt: template.createdAt,
+        updatedAt: template.updatedAt,
+        author: template.userId
+      }))
     });
 
   } catch (error) {
     console.error('Templates fetch error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch templates' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
+// POST /api/templates - Create new template
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const authResult = await authenticateToken(request);
-    if ('error' in authResult) {
-      return authResult.error;
+    const userId = await authenticateUser(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = authResult.user as { userId: string; email: string; role: string };
-    const templateData = await request.json();
+    const {
+      name,
+      description,
+      category,
+      content,
+      thumbnail,
+      tags,
+      isPublic,
+      metadata,
+      settings
+    } = await request.json();
 
     // Validate required fields
-    if (!templateData.name || !templateData.content || !templateData.channel) {
+    if (!name || !category || !content?.html) {
       return NextResponse.json(
-        { error: 'Name, content, and channel are required' },
+        { error: 'Name, category, and content are required' },
         { status: 400 }
       );
     }
 
-    // Validate channel
-    if (!['email', 'sms', 'whatsapp'].includes(templateData.channel)) {
-      return NextResponse.json(
-        { error: 'Invalid channel. Must be email, sms, or whatsapp' },
-        { status: 400 }
-      );
-    }
-
-    // Validate email subject
-    if (templateData.channel === 'email' && !templateData.subject) {
-      return NextResponse.json(
-        { error: 'Email subject is required for email templates' },
-        { status: 400 }
-      );
-    }
-
-    await dbConnect();
-
-    // If setting as default, unset other defaults for this category/channel
-    if (templateData.isDefault) {
-      await Template.updateMany(
-        {
-          agentId: user.userId,
-          channel: templateData.channel,
-          category: templateData.category,
-          isDefault: true
-        },
-        { isDefault: false }
-      );
-    }
-
-    // Create template
-    const template = await Template.create({
-      ...templateData,
-      agentId: user.userId
+    const template = new Template({
+      userId,
+      name: name.trim(),
+      description: description?.trim() || '',
+      category,
+      content,
+      thumbnail,
+      tags: tags || [],
+      isPublic: isPublic || false,
+      metadata: metadata || {
+        width: 800,
+        height: 600,
+        orientation: 'landscape',
+        format: 'image'
+      },
+      settings: settings || {
+        autoSave: true,
+        versionControl: true,
+        collaboration: false
+      }
     });
+
+    await template.save();
 
     return NextResponse.json({
-      success: true,
-      template
-    });
+      template: {
+        id: template._id,
+        name: template.name,
+        description: template.description,
+        category: template.category,
+        thumbnail: template.thumbnail,
+        tags: template.tags,
+        isPublic: template.isPublic,
+        metadata: template.metadata,
+        createdAt: template.createdAt,
+        updatedAt: template.updatedAt
+      }
+    }, { status: 201 });
 
   } catch (error) {
     console.error('Template creation error:', error);

@@ -1,10 +1,10 @@
 [build]
   publish = ".next"
   command = "npm run build"
-  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18"
+  NPM_VERSION = "9"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -39,12 +39,13 @@
 # Environment variables for Netlify functions
 [functions]
   node_bundler = "esbuild"
+  directory = "netlify/functions"
 
 # Build hooks for database setup
 [build.hooks]
   prebuild = "echo 'Setting up build environment...'"
 
-# Edge functions for better performance
-[[edge_functions]]
-  function = "auth-middleware"
-  path = "/api/*"
+# Remove edge functions that can cause issues
+# [[edge_functions]]
+#   function = "auth-middleware"
+#   path = "/api/*"

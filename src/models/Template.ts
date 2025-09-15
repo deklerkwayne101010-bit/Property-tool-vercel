@@ -1,137 +1,262 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const templateSchema = new mongoose.Schema({
-  agentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  name: { type: String, required: true },
-  description: { type: String },
-  category: {
-    type: String,
-    enum: ['welcome', 'follow_up', 'property_update', 'market_report', 'custom'],
-    default: 'custom'
-  },
-  channel: {
-    type: String,
-    enum: ['email', 'sms', 'whatsapp'],
+export interface ITemplate extends Document {
+  _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  name: string;
+  description: string;
+  category: string;
+  content: {
+    html: string;
+    css: string;
+    variables: Record<string, any>;
+  };
+  thumbnail?: string;
+  tags: string[];
+  isPublic: boolean;
+  isDefault: boolean;
+  usageCount: number;
+  rating: number;
+  reviews: number;
+  metadata: {
+    width: number;
+    height: number;
+    orientation: 'portrait' | 'landscape';
+    format: string;
+  };
+  settings: {
+    autoSave: boolean;
+    versionControl: boolean;
+    collaboration: boolean;
+  };
+  versions: Array<{
+    version: number;
+    content: any;
+    createdAt: Date;
+    createdBy: mongoose.Types.ObjectId;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const TemplateSchema: Schema = new Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
     required: true
   },
-  subject: {
+  name: {
     type: String,
-    required: function(this: any) {
-      return this.channel === 'email';
+    required: true,
+    trim: true,
+    maxlength: 100
+  },
+  description: {
+    type: String,
+    maxlength: 500
+  },
+  category: {
+    type: String,
+    required: true,
+    enum: [
+      'residential',
+      'commercial',
+      'industrial',
+      'agricultural',
+      'vacant-land',
+      'social-media',
+      'flyer',
+      'brochure',
+      'email',
+      'website'
+    ]
+  },
+  content: {
+    html: {
+      type: String,
+      required: true
+    },
+    css: {
+      type: String,
+      default: ''
+    },
+    variables: {
+      type: Schema.Types.Mixed,
+      default: {}
     }
   },
-  content: { type: String, required: true },
-  variables: [{
-    name: { type: String, required: true }, // e.g., "contact_name", "property_address"
-    description: { type: String },
-    required: { type: Boolean, default: false },
-    defaultValue: { type: String }
+  thumbnail: {
+    type: String
+  },
+  tags: [{
+    type: String,
+    trim: true
   }],
-  design: {
-    // Email-specific design settings
-    templateType: {
-      type: String,
-      enum: ['plain_text', 'html_basic', 'html_advanced'],
-      default: 'html_basic'
+  isPublic: {
+    type: Boolean,
+    default: false
+  },
+  isDefault: {
+    type: Boolean,
+    default: false
+  },
+  usageCount: {
+    type: Number,
+    default: 0
+  },
+  rating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5
+  },
+  reviews: {
+    type: Number,
+    default: 0
+  },
+  metadata: {
+    width: {
+      type: Number,
+      default: 800
     },
-    primaryColor: { type: String, default: '#2563eb' },
-    secondaryColor: { type: String, default: '#64748b' },
-    fontFamily: { type: String, default: 'Arial, sans-serif' },
-    logoUrl: { type: String },
-    headerImage: { type: String },
-    footerText: { type: String }
+    height: {
+      type: Number,
+      default: 600
+    },
+    orientation: {
+      type: String,
+      enum: ['portrait', 'landscape'],
+      default: 'landscape'
+    },
+    format: {
+      type: String,
+      default: 'image'
+    }
   },
   settings: {
-    // SMS-specific settings
-    maxLength: { type: Number, default: 160 }, // SMS character limit
-    concatenate: { type: Boolean, default: false }, // Allow long SMS concatenation
-
-    // Email-specific settings
-    trackOpens: { type: Boolean, default: true },
-    trackClicks: { type: Boolean, default: true },
-    unsubscribeLink: { type: Boolean, default: true },
-
-    // WhatsApp-specific settings
-    includeButtons: { type: Boolean, default: false },
-    buttonText: { type: String },
-    buttonUrl: { type: String }
+    autoSave: {
+      type: Boolean,
+      default: true
+    },
+    versionControl: {
+      type: Boolean,
+      default: true
+    },
+    collaboration: {
+      type: Boolean,
+      default: false
+    }
   },
-  tags: [{ type: String }], // For organization and filtering
-  isActive: { type: Boolean, default: true },
-  isDefault: { type: Boolean, default: false }, // Default template for category/channel
-  usageStats: {
-    totalSent: { type: Number, default: 0 },
-    openRate: { type: Number, default: 0 },
-    clickRate: { type: Number, default: 0 },
-    responseRate: { type: Number, default: 0 },
-    lastUsed: { type: Date }
-  },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  versions: [{
+    version: {
+      type: Number,
+      required: true
+    },
+    content: {
+      type: Schema.Types.Mixed,
+      required: true
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    }
+  }]
+}, {
+  timestamps: true
 });
 
-// Indexes for efficient queries
-templateSchema.index({ agentId: 1, channel: 1, category: 1 });
-templateSchema.index({ agentId: 1, isActive: 1 });
-templateSchema.index({ tags: 1 });
+// Indexes for better performance
+TemplateSchema.index({ userId: 1, category: 1 });
+TemplateSchema.index({ isPublic: 1, category: 1 });
+TemplateSchema.index({ tags: 1 });
+TemplateSchema.index({ name: 'text', description: 'text' });
 
-// Update the updatedAt field before saving
-templateSchema.pre('save', function(next) {
-  this.updatedAt = new Date();
+// Pre-save middleware to create version
+TemplateSchema.pre<ITemplate>('save', function(next) {
+  if (this.isModified('content') && this.settings.versionControl) {
+    const currentVersion = this.versions.length > 0
+      ? Math.max(...this.versions.map((v: any) => v.version))
+      : 0;
+
+    this.versions.push({
+      version: currentVersion + 1,
+      content: this.content,
+      createdAt: new Date(),
+      createdBy: this.userId
+    });
+
+    // Keep only last 10 versions
+    if (this.versions.length > 10) {
+      this.versions = this.versions.slice(-10);
+    }
+  }
   next();
 });
 
-// Static method to get default templates
-templateSchema.statics.getDefaultTemplates = function(agentId: string, channel: string) {
-  return this.find({
-    agentId,
-    channel,
-    isDefault: true,
-    isActive: true
-  });
-};
-
-// Instance method to render template with variables
-templateSchema.methods.render = function(variables: Record<string, any> = {}): string {
-  let renderedContent = this.content;
-
-  // Replace variables in content
-  this.variables.forEach((variable: any) => {
-    const placeholder = `{{${variable.name}}}`;
-    const value = variables[variable.name] || variable.defaultValue || '';
-
-    // Handle special variables
-    let finalValue = value;
-    if (variable.name === 'current_date') {
-      finalValue = new Date().toLocaleDateString();
-    } else if (variable.name === 'current_year') {
-      finalValue = new Date().getFullYear().toString();
-    }
-
-    renderedContent = renderedContent.replace(new RegExp(placeholder, 'g'), finalValue);
-  });
-
-  return renderedContent;
-};
-
-// Instance method to render subject (email only)
-templateSchema.methods.renderSubject = function(variables: Record<string, any> = {}): string {
-  if (this.channel !== 'email' || !this.subject) {
-    return '';
+// Static methods
+TemplateSchema.statics.findByCategory = function(category: string, userId?: string) {
+  const query: any = { category };
+  if (userId) {
+    query.$or = [
+      { userId },
+      { isPublic: true }
+    ];
+  } else {
+    query.isPublic = true;
   }
-
-  let renderedSubject = this.subject;
-
-  // Replace variables in subject
-  this.variables.forEach((variable: any) => {
-    const placeholder = `{{${variable.name}}}`;
-    const value = variables[variable.name] || variable.defaultValue || '';
-    renderedSubject = renderedSubject.replace(new RegExp(placeholder, 'g'), value);
-  });
-
-  return renderedSubject;
+  return this.find(query).sort({ usageCount: -1, rating: -1 });
 };
 
-const Template = mongoose.models.Template || mongoose.model('Template', templateSchema);
+TemplateSchema.statics.findPopular = function(limit = 10) {
+  return this.find({ isPublic: true })
+    .sort({ usageCount: -1, rating: -1 })
+    .limit(limit);
+};
 
-export default Template;
+TemplateSchema.statics.findByTags = function(tags: string[], userId?: string) {
+  const query: any = { tags: { $in: tags } };
+  if (userId) {
+    query.$or = [
+      { userId },
+      { isPublic: true }
+    ];
+  } else {
+    query.isPublic = true;
+  }
+  return this.find(query);
+};
+
+// Instance methods
+TemplateSchema.methods.incrementUsage = function() {
+  this.usageCount += 1;
+  return this.save();
+};
+
+TemplateSchema.methods.addRating = function(newRating: number) {
+  const totalRating = (this.rating * this.reviews) + newRating;
+  this.reviews += 1;
+  this.rating = totalRating / this.reviews;
+  return this.save();
+};
+
+TemplateSchema.methods.createVersion = function(createdBy: mongoose.Types.ObjectId) {
+  const currentVersion = this.versions.length > 0
+    ? Math.max(...this.versions.map((v: any) => v.version))
+    : 0;
+
+  this.versions.push({
+    version: currentVersion + 1,
+    content: this.content,
+    createdAt: new Date(),
+    createdBy
+  });
+
+  return this.save();
+};
+
+export default mongoose.models.Template || mongoose.model<ITemplate>('Template', TemplateSchema);

@@ -1,517 +1,768 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import Card from '@/components/ui/Card';
-
-interface TemplateVariable {
-  name: string;
-  description: string;
-  required: boolean;
-  defaultValue: string;
-}
 
 interface Template {
   id?: string;
   name: string;
   description: string;
-  category: 'welcome' | 'follow_up' | 'property_update' | 'market_report' | 'custom';
-  channel: 'email' | 'sms' | 'whatsapp';
-  subject?: string;
-  content: string;
-  variables: TemplateVariable[];
+  category: string;
+  content: {
+    html: string;
+    css: string;
+    variables: Record<string, any>;
+  };
+  thumbnail?: string;
   tags: string[];
-  isActive: boolean;
-  isDefault: boolean;
+  isPublic: boolean;
+  metadata: {
+    width: number;
+    height: number;
+    orientation: 'portrait' | 'landscape';
+    format: string;
+  };
+}
+
+interface PropertyData {
+  title: string;
+  price: string;
+  location: string;
+  bedrooms: string;
+  bathrooms: string;
+  garages: string;
+  erfSize: string;
+  floorSize: string;
+  features: string[];
+  agentName: string;
+  agentPhone: string;
+  agentEmail: string;
 }
 
 interface TemplateEditorProps {
-  template?: Template;
-  onSave?: (template: Template) => void;
-  onCancel?: () => void;
-  onPreview?: (template: Template) => void;
+  templateId?: string;
+  initialData?: PropertyData;
 }
 
-export default function TemplateEditor({
-  template,
-  onSave,
-  onCancel,
-  onPreview
-}: TemplateEditorProps) {
-  const [currentTemplate, setCurrentTemplate] = useState<Template>(
-    template || {
-      name: '',
-      description: '',
-      category: 'custom',
-      channel: 'email',
-      subject: '',
-      content: '',
-      variables: [],
-      tags: [],
-      isActive: true,
-      isDefault: false
+export default function TemplateEditor({ templateId, initialData }: TemplateEditorProps) {
+  const [template, setTemplate] = useState<Template>({
+    name: '',
+    description: '',
+    category: 'residential',
+    content: {
+      html: '',
+      css: '',
+      variables: {}
+    },
+    tags: [],
+    isPublic: false,
+    metadata: {
+      width: 800,
+      height: 600,
+      orientation: 'landscape',
+      format: 'image'
     }
-  );
+  });
 
-  const [previewMode, setPreviewMode] = useState(false);
-  const [previewVariables, setPreviewVariables] = useState<Record<string, string>>({});
+  const [propertyData, setPropertyData] = useState<PropertyData>(initialData || {
+    title: '',
+    price: '',
+    location: '',
+    bedrooms: '',
+    bathrooms: '',
+    garages: '',
+    erfSize: '',
+    floorSize: '',
+    features: [],
+    agentName: '',
+    agentPhone: '',
+    agentEmail: ''
+  });
 
-  // Initialize preview variables when template changes
+  const [activeTab, setActiveTab] = useState<'design' | 'content' | 'preview'>('design');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const previewRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
   useEffect(() => {
-    const initialVars: Record<string, string> = {};
-    currentTemplate.variables.forEach(variable => {
-      initialVars[variable.name] = variable.defaultValue || '';
-    });
-    setPreviewVariables(initialVars);
-  }, [currentTemplate.variables]);
+    if (templateId) {
+      loadTemplate(templateId);
+    } else {
+      // Load default template
+      loadDefaultTemplate();
+    }
+  }, [templateId]);
 
-  const addVariable = useCallback(() => {
-    const newVariable: TemplateVariable = {
-      name: '',
-      description: '',
-      required: false,
-      defaultValue: ''
+  const loadTemplate = async (id: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/auth/signin');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/templates/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTemplate(data.template);
+      } else {
+        setMessage('Failed to load template');
+      }
+    } catch (error) {
+      console.error('Error loading template:', error);
+      setMessage('Failed to load template');
+    }
+  };
+
+  const loadDefaultTemplate = () => {
+    // Default property marketing template
+    const defaultTemplate: Template = {
+      name: 'Modern Property Flyer',
+      description: 'A clean, modern template for property marketing',
+      category: 'flyer',
+      content: {
+        html: `
+          <div class="property-flyer">
+            <div class="header">
+              <h1>{{title}}</h1>
+              <div class="price">{{price}}</div>
+            </div>
+            <div class="image-gallery">
+              <div class="main-image">
+                <img src="{{mainImage}}" alt="Property" />
+              </div>
+              <div class="thumbnail-images">
+                {{#each images}}
+                <img src="{{this}}" alt="Property" />
+                {{/each}}
+              </div>
+            </div>
+            <div class="property-details">
+              <div class="detail-row">
+                <span class="label">Location:</span>
+                <span class="value">{{location}}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Bedrooms:</span>
+                <span class="value">{{bedrooms}}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Bathrooms:</span>
+                <span class="value">{{bathrooms}}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Garages:</span>
+                <span class="value">{{garages}}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Erf Size:</span>
+                <span class="value">{{erfSize}} m²</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Floor Size:</span>
+                <span class="value">{{floorSize}} m²</span>
+              </div>
+            </div>
+            <div class="features">
+              <h3>Key Features</h3>
+              <ul>
+                {{#each features}}
+                <li>{{this}}</li>
+                {{/each}}
+              </ul>
+            </div>
+            <div class="agent-info">
+              <h3>Contact Agent</h3>
+              <div class="agent-details">
+                <div class="agent-name">{{agentName}}</div>
+                <div class="agent-contact">
+                  <div>Phone: {{agentPhone}}</div>
+                  <div>Email: {{agentEmail}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        css: `
+          .property-flyer {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+
+          .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+
+          .header h1 {
+            font-size: 28px;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+          }
+
+          .price {
+            font-size: 24px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: inline-block;
+          }
+
+          .image-gallery {
+            padding: 20px;
+          }
+
+          .main-image img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+          }
+
+          .thumbnail-images {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+          }
+
+          .thumbnail-images img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+          }
+
+          .property-details {
+            padding: 20px;
+            background: #f8f9fa;
+          }
+
+          .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+          }
+
+          .detail-row:last-child {
+            border-bottom: none;
+          }
+
+          .label {
+            font-weight: bold;
+            color: #495057;
+          }
+
+          .value {
+            color: #007bff;
+            font-weight: 500;
+          }
+
+          .features {
+            padding: 20px;
+          }
+
+          .features h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 18px;
+          }
+
+          .features ul {
+            list-style: none;
+            padding: 0;
+          }
+
+          .features li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 20px;
+          }
+
+          .features li:before {
+            content: '✓';
+            color: #28a745;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+          }
+
+          .agent-info {
+            background: #343a40;
+            color: white;
+            padding: 20px;
+            text-align: center;
+          }
+
+          .agent-info h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+          }
+
+          .agent-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+          }
+
+          .agent-contact div {
+            margin: 5px 0;
+          }
+        `,
+        variables: {}
+      },
+      tags: ['modern', 'flyer', 'property'],
+      isPublic: false,
+      metadata: {
+        width: 800,
+        height: 600,
+        orientation: 'portrait',
+        format: 'image'
+      }
     };
 
-    setCurrentTemplate(prev => ({
+    setTemplate(defaultTemplate);
+  };
+
+  const handleInputChange = (field: string, value: string | boolean | string[]) => {
+    setTemplate(prev => ({
       ...prev,
-      variables: [...prev.variables, newVariable]
+      [field]: value
     }));
-  }, []);
+  };
 
-  const updateVariable = useCallback((index: number, updates: Partial<TemplateVariable>) => {
-    setCurrentTemplate(prev => ({
+  const handlePropertyDataChange = (field: string, value: string | string[]) => {
+    setPropertyData(prev => ({
       ...prev,
-      variables: prev.variables.map((variable, i) =>
-        i === index ? { ...variable, ...updates } : variable
-      )
+      [field]: value
     }));
-  }, []);
+  };
 
-  const removeVariable = useCallback((index: number) => {
-    setCurrentTemplate(prev => ({
-      ...prev,
-      variables: prev.variables.filter((_, i) => i !== index)
-    }));
-  }, []);
-
-  const insertVariable = useCallback((variableName: string) => {
-    const placeholder = `{{${variableName}}}`;
-    const textarea = document.getElementById('template-content') as HTMLTextAreaElement;
-
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const text = textarea.value;
-      const before = text.substring(0, start);
-      const after = text.substring(end);
-
-      setCurrentTemplate(prev => ({
-        ...prev,
-        content: before + placeholder + after
-      }));
-
-      // Reset cursor position
-      setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + placeholder.length, start + placeholder.length);
-      }, 0);
+  const handleScrapeProperty = async () => {
+    if (!propertyData.title && !propertyData.location) {
+      setMessage('Please enter a property title or location to search');
+      return;
     }
-  }, []);
 
-  const renderPreview = useCallback(() => {
-    let content = currentTemplate.content;
+    setIsLoading(true);
+    setMessage('');
 
-    // Replace variables with preview values
-    currentTemplate.variables.forEach(variable => {
-      const placeholder = `{{${variable.name}}}`;
-      const value = previewVariables[variable.name] || variable.defaultValue || `[${variable.name}]`;
-      content = content.replace(new RegExp(placeholder, 'g'), value);
+    // For demo purposes, we'll simulate scraping
+    // In a real implementation, this would search for properties
+    setTimeout(() => {
+      setPropertyData({
+        title: 'Luxury 3-Bedroom Apartment',
+        price: 'R 2,850,000',
+        location: 'Cape Town, Western Cape',
+        bedrooms: '3',
+        bathrooms: '2',
+        garages: '1',
+        erfSize: '150',
+        floorSize: '120',
+        features: ['Sea View', 'Modern Kitchen', 'Solar Panels', 'Security Estate'],
+        agentName: 'Sarah Johnson',
+        agentPhone: '+27 21 555 0123',
+        agentEmail: 'sarah@luxuryproperties.co.za'
+      });
+      setIsLoading(false);
+      setMessage('Property data loaded successfully');
+    }, 2000);
+  };
+
+  const saveTemplate = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/auth/signin');
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage('');
+
+    try {
+      const method = template.id ? 'PUT' : 'POST';
+      const url = template.id ? `/api/templates/${template.id}` : '/api/templates';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(template)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (!template.id) {
+          setTemplate(prev => ({ ...prev, id: data.template.id }));
+        }
+        setMessage('Template saved successfully!');
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Failed to save template');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      setMessage('Failed to save template');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const renderPreview = () => {
+    if (!previewRef.current) return;
+
+    // Simple template rendering (in a real app, you'd use a proper template engine)
+    let html = template.content.html;
+
+    // Replace variables with property data
+    Object.keys(propertyData).forEach(key => {
+      const value = propertyData[key as keyof PropertyData];
+      if (Array.isArray(value)) {
+        // Handle arrays (like features)
+        const regex = new RegExp(`{{#each ${key}}}(.*?){{/each}}`, 'gs');
+        html = html.replace(regex, (match, content) => {
+          return value.map(item => content.replace(/{{this}}/g, item)).join('');
+        });
+      } else {
+        html = html.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
+      }
     });
 
-    return content;
-  }, [currentTemplate.content, currentTemplate.variables, previewVariables]);
+    // Add some default images if none provided
+    html = html.replace(/{{mainImage}}/g, 'https://via.placeholder.com/800x400/667eea/white?text=Property+Image');
+    html = html.replace(/{{#each images}}(.*?){{\/each}}/g, '');
 
-  const handleSave = useCallback(() => {
-    if (!currentTemplate.name.trim()) {
-      alert('Please enter a template name');
-      return;
-    }
+    previewRef.current.innerHTML = html;
 
-    if (!currentTemplate.content.trim()) {
-      alert('Please enter template content');
-      return;
-    }
+    // Add CSS
+    const style = document.createElement('style');
+    style.textContent = template.content.css;
+    previewRef.current.appendChild(style);
+  };
 
-    if (currentTemplate.channel === 'email' && !currentTemplate.subject?.trim()) {
-      alert('Please enter an email subject');
-      return;
+  useEffect(() => {
+    if (activeTab === 'preview') {
+      renderPreview();
     }
+  }, [activeTab, template, propertyData]);
 
-    // Validate variables
-    for (const variable of currentTemplate.variables) {
-      if (!variable.name.trim()) {
-        alert('All variables must have a name');
-        return;
-      }
-    }
-
-    if (onSave) {
-      onSave(currentTemplate);
-    }
-  }, [currentTemplate, onSave]);
-
-  const handlePreview = useCallback(() => {
-    if (onPreview) {
-      onPreview(currentTemplate);
-    } else {
-      setPreviewMode(!previewMode);
-    }
-  }, [currentTemplate, onPreview, previewMode]);
+  const categories = [
+    { value: 'residential', label: 'Residential' },
+    { value: 'commercial', label: 'Commercial' },
+    { value: 'flyer', label: 'Flyer' },
+    { value: 'brochure', label: 'Brochure' },
+    { value: 'social-media', label: 'Social Media' },
+    { value: 'email', label: 'Email' },
+    { value: 'website', label: 'Website' }
+  ];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {template ? 'Edit Template' : 'Create New Template'}
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Create reusable templates for your automated communications
-          </p>
-        </div>
-        <div className="flex space-x-3">
-          <Button variant="outline" onClick={handlePreview}>
-            {previewMode ? 'Edit' : 'Preview'}
-          </Button>
-          {onCancel && (
-            <Button variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-          )}
-          <Button onClick={handleSave}>
-            {template ? 'Update Template' : 'Create Template'}
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Editor */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Information */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
-            <div className="space-y-4">
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center">
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="mr-4 text-gray-400 hover:text-gray-600"
+              >
+                ← Back to Dashboard
+              </button>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Template Name *
-                </label>
-                <Input
-                  value={currentTemplate.name}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setCurrentTemplate(prev => ({ ...prev, name: e.target.value }))
-                  }
-                  placeholder="e.g., Welcome Email"
-                  className="w-full"
-                />
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {template.id ? 'Edit Template' : 'Create Template'}
+                </h1>
+                <p className="text-gray-600">Design and customize your property marketing templates</p>
               </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => setActiveTab('preview')}
+              >
+                Preview
+              </Button>
+              <Button
+                onClick={saveTemplate}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Saving...' : 'Save Template'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <Input
-                  value={currentTemplate.description}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setCurrentTemplate(prev => ({ ...prev, description: e.target.value }))
-                  }
-                  placeholder="Brief description of this template"
-                  className="w-full"
-                />
-              </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Template Settings */}
+          <div className="lg:col-span-1">
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Template Settings</h2>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Template Name
+                  </label>
+                  <Input
+                    type="text"
+                    value={template.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="Enter template name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={template.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder="Describe your template"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Category
                   </label>
                   <select
-                    value={currentTemplate.category}
-                    onChange={(e) =>
-                      setCurrentTemplate(prev => ({ ...prev, category: e.target.value as any }))
-                    }
+                    value={template.category}
+                    onChange={(e) => handleInputChange('category', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="welcome">Welcome</option>
-                    <option value="follow_up">Follow-up</option>
-                    <option value="property_update">Property Update</option>
-                    <option value="market_report">Market Report</option>
-                    <option value="custom">Custom</option>
+                    {categories.map(cat => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Channel *
-                  </label>
-                  <select
-                    value={currentTemplate.channel}
-                    onChange={(e) =>
-                      setCurrentTemplate(prev => ({ ...prev, channel: e.target.value as any }))
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="email">Email</option>
-                    <option value="sms">SMS</option>
-                    <option value="whatsapp">WhatsApp</option>
-                  </select>
-                </div>
-              </div>
-
-              {currentTemplate.channel === 'email' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Subject *
+                    Tags
                   </label>
                   <Input
-                    value={currentTemplate.subject}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setCurrentTemplate(prev => ({ ...prev, subject: e.target.value }))
-                    }
-                    placeholder="Email subject line"
-                    className="w-full"
+                    type="text"
+                    value={template.tags.join(', ')}
+                    onChange={(e) => handleInputChange('tags', e.target.value.split(',').map(t => t.trim()))}
+                    placeholder="modern, flyer, property"
                   />
                 </div>
-              )}
-            </div>
-          </Card>
 
-          {/* Content Editor */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Content</h3>
-              {!previewMode && (
-                <div className="text-sm text-gray-500">
-                  Use {'{{variable_name}}'} for dynamic content
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="isPublic"
+                    checked={template.isPublic}
+                    onChange={(e) => handleInputChange('isPublic', e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  <label htmlFor="isPublic" className="ml-2 text-sm text-gray-700">
+                    Make template public
+                  </label>
                 </div>
-              )}
-            </div>
+              </div>
+            </Card>
 
-            {previewMode ? (
+            {/* Property Data */}
+            <Card className="p-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Data</h2>
+
               <div className="space-y-4">
-                {currentTemplate.channel === 'email' && currentTemplate.subject && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Subject Preview
-                    </label>
-                    <div className="p-3 bg-gray-50 rounded border">
-                      {(() => {
-                        let subject = currentTemplate.subject!;
-                        currentTemplate.variables.forEach(variable => {
-                          const placeholder = `{{${variable.name}}}`;
-                          const value = previewVariables[variable.name] || variable.defaultValue || `[${variable.name}]`;
-                          subject = subject.replace(new RegExp(placeholder, 'g'), value);
-                        });
-                        return subject;
-                      })()}
-                    </div>
-                  </div>
-                )}
+                <Button
+                  onClick={handleScrapeProperty}
+                  disabled={isLoading}
+                  className="w-full"
+                  variant="outline"
+                >
+                  {isLoading ? 'Loading...' : 'Load Sample Data'}
+                </Button>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Content Preview
+                    Property Title
                   </label>
-                  <div className="p-4 bg-gray-50 rounded border min-h-[200px] whitespace-pre-wrap">
-                    {renderPreview()}
-                  </div>
+                  <Input
+                    type="text"
+                    value={propertyData.title}
+                    onChange={(e) => handlePropertyDataChange('title', e.target.value)}
+                    placeholder="Luxury 3-Bedroom Apartment"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Price
+                  </label>
+                  <Input
+                    type="text"
+                    value={propertyData.price}
+                    onChange={(e) => handlePropertyDataChange('price', e.target.value)}
+                    placeholder="R 2,850,000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Location
+                  </label>
+                  <Input
+                    type="text"
+                    value={propertyData.location}
+                    onChange={(e) => handlePropertyDataChange('location', e.target.value)}
+                    placeholder="Cape Town, Western Cape"
+                  />
                 </div>
               </div>
-            ) : (
-              <div>
-                <textarea
-                  id="template-content"
-                  value={currentTemplate.content}
-                  onChange={(e) =>
-                    setCurrentTemplate(prev => ({ ...prev, content: e.target.value }))
-                  }
-                  placeholder="Enter your template content here..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[300px] resize-vertical"
-                  rows={15}
-                />
-              </div>
-            )}
-          </Card>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Variables */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Variables</h3>
-              <Button size="sm" onClick={addVariable}>
-                Add Variable
-              </Button>
-            </div>
-
-            {currentTemplate.variables.length === 0 ? (
-              <p className="text-gray-500 text-sm">
-                No variables defined. Add variables to make your template dynamic.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {currentTemplate.variables.map((variable, index) => (
-                  <div key={index} className="border rounded-lg p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Input
-                        value={variable.name}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          updateVariable(index, { name: e.target.value })
-                        }
-                        placeholder="Variable name"
-                        className="flex-1 mr-2"
-                      />
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => insertVariable(variable.name)}
-                        disabled={!variable.name.trim()}
-                      >
-                        Insert
-                      </Button>
-                    </div>
-
-                    <Input
-                      value={variable.description}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        updateVariable(index, { description: e.target.value })
-                      }
-                      placeholder="Description (optional)"
-                      className="w-full"
-                    />
-
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`required-${index}`}
-                        checked={variable.required}
-                        onChange={(e) =>
-                          updateVariable(index, { required: e.target.checked })
-                        }
-                      />
-                      <label htmlFor={`required-${index}`} className="text-sm text-gray-700">
-                        Required
-                      </label>
-                    </div>
-
-                    <Input
-                      value={variable.defaultValue}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        updateVariable(index, { defaultValue: e.target.value })
-                      }
-                      placeholder="Default value"
-                      className="w-full"
-                    />
-
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => removeVariable(index)}
-                      className="w-full text-red-600 hover:text-red-700"
-                    >
-                      Remove Variable
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          {/* Preview Variables */}
-          {previewMode && currentTemplate.variables.length > 0 && (
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Preview Variables</h3>
-              <div className="space-y-3">
-                {currentTemplate.variables.map((variable, index) => (
-                  <div key={index}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {variable.name}
-                      {variable.required && <span className="text-red-500">*</span>}
-                    </label>
-                    <Input
-                      value={previewVariables[variable.name] || ''}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setPreviewVariables(prev => ({
-                          ...prev,
-                          [variable.name]: e.target.value
-                        }))
-                      }
-                      placeholder={variable.defaultValue || `Enter ${variable.name}`}
-                      className="w-full"
-                    />
-                  </div>
-                ))}
-              </div>
             </Card>
-          )}
+          </div>
 
-          {/* Settings */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Settings</h3>
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="is-active"
-                  checked={currentTemplate.isActive}
-                  onChange={(e) =>
-                    setCurrentTemplate(prev => ({ ...prev, isActive: e.target.checked }))
-                  }
-                  className="mr-2"
-                />
-                <label htmlFor="is-active" className="text-sm text-gray-700">
-                  Active
-                </label>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="is-default"
-                  checked={currentTemplate.isDefault}
-                  onChange={(e) =>
-                    setCurrentTemplate(prev => ({ ...prev, isDefault: e.target.checked }))
-                  }
-                  className="mr-2"
-                />
-                <label htmlFor="is-default" className="text-sm text-gray-700">
-                  Default for category
-                </label>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tags
-                </label>
-                <Input
-                  value={currentTemplate.tags.join(', ')}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setCurrentTemplate(prev => ({
-                      ...prev,
-                      tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
-                    }))
-                  }
-                  placeholder="tag1, tag2, tag3"
-                  className="w-full"
-                />
+          {/* Editor/Preview */}
+          <div className="lg:col-span-3">
+            {/* Tab Navigation */}
+            <div className="mb-6">
+              <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8">
+                  {[
+                    { id: 'design', name: 'Design' },
+                    { id: 'content', name: 'Content' },
+                    { id: 'preview', name: 'Preview' }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                        activeTab === tab.id
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      {tab.name}
+                    </button>
+                  ))}
+                </nav>
               </div>
             </div>
-          </Card>
+
+            {/* Tab Content */}
+            {activeTab === 'design' && (
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Template Design</h2>
+                <div className="text-center py-12 text-gray-500">
+                  <p>Design tools will be available here</p>
+                  <p className="text-sm mt-2">Drag and drop elements, customize colors, fonts, and layouts</p>
+                </div>
+              </Card>
+            )}
+
+            {activeTab === 'content' && (
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Template Content</h2>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      HTML Template
+                    </label>
+                    <textarea
+                      value={template.content.html}
+                      onChange={(e) => setTemplate(prev => ({
+                        ...prev,
+                        content: {
+                          ...prev.content,
+                          html: e.target.value
+                        }
+                      }))}
+                      rows={20}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter your HTML template..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      CSS Styles
+                    </label>
+                    <textarea
+                      value={template.content.css}
+                      onChange={(e) => setTemplate(prev => ({
+                        ...prev,
+                        content: {
+                          ...prev.content,
+                          css: e.target.value
+                        }
+                      }))}
+                      rows={15}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter your CSS styles..."
+                    />
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {activeTab === 'preview' && (
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Template Preview</h2>
+
+                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                  <div
+                    ref={previewRef}
+                    className="min-h-96 p-4"
+                    style={{
+                      width: template.metadata.width,
+                      height: template.metadata.height,
+                      margin: '0 auto'
+                    }}
+                  />
+                </div>
+
+                <div className="mt-4 text-sm text-gray-600">
+                  <p>Preview dimensions: {template.metadata.width} × {template.metadata.height}px</p>
+                  <p>Use variables like {'{{title}}'}, {'{{price}}'}, {'{{location}}'} in your template</p>
+                </div>
+              </Card>
+            )}
+          </div>
         </div>
-      </div>
+      </main>
+
+      {/* Message */}
+      {message && (
+        <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg ${
+          message.includes('success')
+            ? 'bg-green-50 border border-green-200 text-green-700'
+            : 'bg-red-50 border border-red-200 text-red-700'
+        }`}>
+          {message}
+        </div>
+      )}
     </div>
   );
 }

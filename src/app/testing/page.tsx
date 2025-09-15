@@ -1,17 +1,9 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
-import SATemplateSelector from '@/components/templates/SATemplateSelector';
+import TestDashboard from '@/components/testing/TestDashboard';
 
-export default function SALibraryPage() {
-  const router = useRouter();
-
-  const handleSelectTemplate = (template: any) => {
-    // Navigate to editor with selected template
-    router.push(`/templates/editor?id=${template.id}`);
-  };
-
+export default function TestingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -20,15 +12,15 @@ export default function SALibraryPage() {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
               <button
-                onClick={() => router.push('/dashboard')}
+                onClick={() => window.history.back()}
                 className="mr-4 text-gray-400 hover:text-gray-600"
               >
-                ← Back to Dashboard
+                ← Back
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">South African Template Library</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Testing Dashboard</h1>
                 <p className="text-gray-600 mt-1">
-                  Professional property marketing templates designed for the South African market
+                  Test and validate all PropertyPro features
                 </p>
               </div>
             </div>
@@ -39,7 +31,7 @@ export default function SALibraryPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <SATemplateSelector onSelectTemplate={handleSelectTemplate} />
+          <TestDashboard />
         </div>
       </main>
     </div>

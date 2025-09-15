@@ -1,28 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateToken } from '@/lib/auth-middleware';
-import Template from '@/models/Template';
+import jwt from 'jsonwebtoken';
 import dbConnect from '@/lib/mongodb';
+import Template from '@/models/Template';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+async function authenticateUser(request: NextRequest) {
   try {
-    // Check authentication
-    const authResult = await authenticateToken(request);
-    if ('error' in authResult) {
-      return authResult.error;
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return null;
     }
 
-    const user = authResult.user as { userId: string; email: string; role: string };
-    const { id } = await params;
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
 
     await dbConnect();
+    return decoded.userId;
+  } catch (error) {
+    return null;
+  }
+}
+
+// GET /api/templates/[id] - Get specific template
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const userId = await authenticateUser(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const template = await Template.findOne({
-      _id: id,
-      agentId: user.userId
-    });
+      _id: params.id,
+      $or: [
+        { userId },
+        { isPublic: true }
+      ]
+    }).populate('userId', 'name');
 
     if (!template) {
       return NextResponse.json(
@@ -32,73 +47,82 @@ export async function GET(
     }
 
     return NextResponse.json({
-      success: true,
-      template
+      template: {
+        id: template._id,
+        name: template.name,
+        description: template.description,
+        category: template.category,
+        content: template.content,
+        thumbnail: template.thumbnail,
+        tags: template.tags,
+        isPublic: template.isPublic,
+        usageCount: template.usageCount,
+        rating: template.rating,
+        reviews: template.reviews,
+        metadata: template.metadata,
+        settings: template.settings,
+        versions: template.versions,
+        createdAt: template.createdAt,
+        updatedAt: template.updatedAt,
+        author: template.userId
+      }
     });
 
   } catch (error) {
     console.error('Template fetch error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch template' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
+// PUT /api/templates/[id] - Update template
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    // Check authentication
-    const authResult = await authenticateToken(request);
-    if ('error' in authResult) {
-      return authResult.error;
+    const userId = await authenticateUser(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = authResult.user as { userId: string; email: string; role: string };
-    const { id } = await params;
     const updateData = await request.json();
 
-    await dbConnect();
+    const template = await Template.findOneAndUpdate(
+      {
+        _id: params.id,
+        userId // Only allow users to update their own templates
+      },
+      {
+        ...updateData,
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
 
-    // Check if template exists and belongs to user
-    const existingTemplate = await Template.findOne({
-      _id: id,
-      agentId: user.userId
-    });
-
-    if (!existingTemplate) {
+    if (!template) {
       return NextResponse.json(
-        { error: 'Template not found' },
+        { error: 'Template not found or access denied' },
         { status: 404 }
       );
     }
 
-    // If setting as default, unset other defaults for this category/channel
-    if (updateData.isDefault) {
-      await Template.updateMany(
-        {
-          agentId: user.userId,
-          channel: updateData.channel || existingTemplate.channel,
-          category: updateData.category || existingTemplate.category,
-          isDefault: true,
-          _id: { $ne: id }
-        },
-        { isDefault: false }
-      );
-    }
-
-    // Update template
-    const template = await Template.findByIdAndUpdate(
-      id,
-      { ...updateData, updatedAt: new Date() },
-      { new: true }
-    );
-
     return NextResponse.json({
-      success: true,
-      template
+      template: {
+        id: template._id,
+        name: template.name,
+        description: template.description,
+        category: template.category,
+        content: template.content,
+        thumbnail: template.thumbnail,
+        tags: template.tags,
+        isPublic: template.isPublic,
+        metadata: template.metadata,
+        settings: template.settings,
+        updatedAt: template.updatedAt
+      }
     });
 
   } catch (error) {
@@ -110,40 +134,30 @@ export async function PUT(
   }
 }
 
+// DELETE /api/templates/[id] - Delete template
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    // Check authentication
-    const authResult = await authenticateToken(request);
-    if ('error' in authResult) {
-      return authResult.error;
+    const userId = await authenticateUser(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = authResult.user as { userId: string; email: string; role: string };
-    const { id } = await params;
-
-    await dbConnect();
-
-    // Check if template exists and belongs to user
-    const template = await Template.findOne({
-      _id: id,
-      agentId: user.userId
+    const template = await Template.findOneAndDelete({
+      _id: params.id,
+      userId // Only allow users to delete their own templates
     });
 
     if (!template) {
       return NextResponse.json(
-        { error: 'Template not found' },
+        { error: 'Template not found or access denied' },
         { status: 404 }
       );
     }
 
-    // Delete template
-    await Template.findByIdAndDelete(id);
-
     return NextResponse.json({
-      success: true,
       message: 'Template deleted successfully'
     });
 

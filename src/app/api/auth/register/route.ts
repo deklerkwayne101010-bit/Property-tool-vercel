@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
 
-    const { name, email, password } = await request.json();
+    const { name, email, password, role, agency, phone } = await request.json();
 
     // Validate input
     if (!name || !email || !password) {
@@ -25,6 +25,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate role
+    const validRoles = ['agent', 'admin', 'user'];
+    const userRole = role && validRoles.includes(role) ? role : 'user';
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -38,11 +42,24 @@ export async function POST(request: NextRequest) {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create user
+    // Create user with new schema
     const user = new User({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role: userRole,
+      credits: 5, // Free users get 5 credits
+      subscription: {
+        plan: 'free',
+        status: 'active',
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
+        features: ['Basic descriptions', 'Limited templates'],
+        autoRenew: true
+      },
+      profile: {
+        agency: agency || '',
+        phone: phone || ''
+      }
     });
 
     await user.save();
@@ -60,7 +77,12 @@ export async function POST(request: NextRequest) {
       email: user.email,
       name: user.name,
       role: user.role,
-      settings: user.settings
+      credits: user.credits,
+      subscription: user.subscription,
+      profile: user.profile,
+      settings: user.settings,
+      usage: user.usage,
+      isEmailVerified: user.isEmailVerified
     };
 
     return NextResponse.json({
