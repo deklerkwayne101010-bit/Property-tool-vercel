@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
-import Input from '@/components/ui/Input';
 
 export default function CRMPage() {
   const [activeTab, setActiveTab] = useState('contacts');

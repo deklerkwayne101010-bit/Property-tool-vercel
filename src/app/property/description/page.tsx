@@ -1339,10 +1339,10 @@ ${propertyData.bathrooms ? `🛁 ${propertyData.bathrooms} Bathrooms` : ''}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Generated Descriptions</h2>
                 <div className="flex space-x-2">
-                  {['short', 'medium', 'long', 'social'].map((type) => (
+                  {(['short', 'medium', 'long', 'social'] as const).map((type) => (
                     <button
                       key={type}
-                      onClick={() => setActiveDescription(type as any)}
+                      onClick={() => setActiveDescription(type)}
                       className={`px-3 py-1 text-xs rounded-full ${
                         activeDescription === type
                           ? 'bg-blue-100 text-blue-800'
@@ -1392,7 +1392,7 @@ ${propertyData.bathrooms ? `🛁 ${propertyData.bathrooms} Bathrooms` : ''}
                     <span className="text-3xl">🤖</span>
                   </div>
                   <p className="text-lg font-medium mb-2">AI Description Generator</p>
-                  <p className="text-sm">Fill in the property details and click "Generate AI Descriptions" to create compelling property descriptions.</p>
+                  <p className="text-sm">Fill in the property details and click &ldquo;Generate AI Descriptions&rdquo; to create compelling property descriptions.</p>
                 </div>
               )}
             </Card>

@@ -249,7 +249,7 @@ export default function AnalyticsPage() {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-900">
-                  Email sequence <span className="font-medium">"New Property Inquiry"</span> completed for 3 contacts
+                  Email sequence <span className="font-medium">&ldquo;New Property Inquiry&rdquo;</span> completed for 3 contacts
                 </p>
                 <p className="text-xs text-gray-600">1 day ago</p>
               </div>
