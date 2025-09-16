@@ -1,6 +1,8 @@
 // Property24 Web Scraper and Data Extractor for Netlify
 // Uses CORS proxy for serverless compatibility
 
+import * as cheerio from 'cheerio';
+
 export interface Property24Data {
   // Basic Property Info
   title: string;
@@ -141,7 +143,6 @@ export class Property24Scraper {
   private static parsePropertyData(html: string, propertyId: string): Property24Data {
     try {
       // Use cheerio for server-side HTML parsing instead of DOMParser
-      const cheerio = require('cheerio');
       const $ = cheerio.load(html);
       const doc = $;
 
@@ -347,7 +348,7 @@ export class Property24Scraper {
             features.push(text.trim());
           }
         });
-      } catch (e) {
+      } catch {
         // Skip invalid selectors
         continue;
       }
@@ -380,7 +381,7 @@ export class Property24Scraper {
             images.push(src);
           }
         });
-      } catch (e) {
+      } catch {
         // Skip invalid selectors
         continue;
       }

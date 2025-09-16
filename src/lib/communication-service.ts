@@ -4,7 +4,6 @@
 import sgMail from '@sendgrid/mail';
 import twilio from 'twilio';
 import nodemailer from 'nodemailer';
-import Communication from '@/models/Communication';
 import Template from '@/models/Template';
 
 export interface SendEmailOptions {

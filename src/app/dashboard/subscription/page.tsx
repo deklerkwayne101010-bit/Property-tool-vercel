@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -25,7 +25,7 @@ export default function SubscriptionPage() {
   const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
   const router = useRouter();
 
-  const loadSubscriptionData = async () => {
+  const loadSubscriptionData = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/auth/signin');
@@ -54,7 +54,7 @@ export default function SubscriptionPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     loadSubscriptionData();

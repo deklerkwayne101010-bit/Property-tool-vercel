@@ -184,7 +184,7 @@ const PipelineView: React.FC<PipelineViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          {stages.map((stage, index) => (
+          {stages.map((stage, _index) => (
             <div key={stage.id} className="text-center bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-200">
               <div className="flex items-center justify-center mb-4">
                 <div
