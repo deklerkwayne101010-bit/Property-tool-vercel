@@ -1,10 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Disable static optimization for API routes
-  experimental: {
-    serverComponentsExternalPackages: [],
-  },
+  // Configure external packages for server components
+  serverExternalPackages: [],
 
   // Configure for Netlify deployment
   output: 'standalone',
