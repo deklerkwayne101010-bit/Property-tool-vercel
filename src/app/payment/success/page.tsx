@@ -11,7 +11,7 @@ export default function PaymentSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const verifyPayment = useCallback(async (paymentId: string, transactionId?: string | null) => {
+  const verifyPayment = useCallback(async (paymentId: string) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -38,7 +38,7 @@ export default function PaymentSuccessPage() {
 
     if (paymentId) {
       // Verify payment with backend
-      verifyPayment(paymentId, searchParams.get('transactionId'));
+      verifyPayment(paymentId);
     } else {
       setStatus('error');
       setMessage('Payment ID not found');

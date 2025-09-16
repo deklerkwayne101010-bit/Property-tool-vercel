@@ -31,7 +31,6 @@ interface ContactNotesProps {
 }
 
 const ContactNotes: React.FC<ContactNotesProps> = ({
-  contactId,
   notes,
   activities,
   onAddNote,
