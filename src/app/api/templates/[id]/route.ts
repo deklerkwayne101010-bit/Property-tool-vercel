@@ -23,8 +23,9 @@ async function authenticateUser(request: NextRequest) {
 // GET /api/templates/[id] - Get specific template
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
   try {
     const userId = await authenticateUser(request);
     if (!userId) {
@@ -32,7 +33,7 @@ export async function GET(
     }
 
     const template = await Template.findOne({
-      _id: params.id,
+      _id: id,
       $or: [
         { userId },
         { isPublic: true }
@@ -80,8 +81,10 @@ export async function GET(
 // PUT /api/templates/[id] - Update template
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
+
   try {
     const userId = await authenticateUser(request);
     if (!userId) {
@@ -92,7 +95,7 @@ export async function PUT(
 
     const template = await Template.findOneAndUpdate(
       {
-        _id: params.id,
+        _id: id,
         userId // Only allow users to update their own templates
       },
       {
@@ -137,8 +140,10 @@ export async function PUT(
 // DELETE /api/templates/[id] - Delete template
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
+
   try {
     const userId = await authenticateUser(request);
     if (!userId) {
@@ -146,7 +151,7 @@ export async function DELETE(
     }
 
     const template = await Template.findOneAndDelete({
-      _id: params.id,
+      _id: id,
       userId // Only allow users to delete their own templates
     });
 
