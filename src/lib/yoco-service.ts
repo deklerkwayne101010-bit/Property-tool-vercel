@@ -201,5 +201,39 @@ export class YocoService {
   }
 }
 
-// Export singleton instance
-export const yocoService = new YocoService();
+// Lazy initialization to avoid build-time errors
+let yocoServiceInstance: YocoService | null = null;
+
+export const yocoService = {
+  getInstance(): YocoService {
+    if (!yocoServiceInstance) {
+      yocoServiceInstance = new YocoService();
+    }
+    return yocoServiceInstance;
+  },
+
+  // Proxy methods to the actual service instance
+  async createPayment(request: YocoPaymentRequest): Promise<YocoPaymentResponse> {
+    return this.getInstance().createPayment(request);
+  },
+
+  async getPaymentStatus(paymentId: string): Promise<YocoPaymentResponse> {
+    return this.getInstance().getPaymentStatus(paymentId);
+  },
+
+  async getCharge(chargeId: string): Promise<YocoChargeResponse> {
+    return this.getInstance().getCharge(chargeId);
+  },
+
+  async processWebhook(payload: any, signature: string): Promise<boolean> {
+    return this.getInstance().processWebhook(payload, signature);
+  },
+
+  async refundPayment(chargeId: string, amount?: number): Promise<any> {
+    return this.getInstance().refundPayment(chargeId, amount);
+  },
+
+  validateWebhookSignature(payload: string, signature: string): boolean {
+    return this.getInstance().validateWebhookSignature(payload, signature);
+  }
+};
