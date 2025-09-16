@@ -16,16 +16,19 @@ const nextConfig: NextConfig = {
 
   // Webpack configuration to handle Node.js modules in browser
   webpack: (config, { isServer }) => {
-    // Provide empty implementations for Node.js core modules
+    // Provide fallbacks for Node.js core modules
     // that are referenced by dotenv and other libraries
     if (!isServer) {
-      config.node = {
-        ...config.node,
-        fs: 'empty',
-        child_process: 'empty',
-        net: 'empty',
-        tls: 'empty',
-        dns: 'empty',
+      config.resolve = {
+        ...config.resolve,
+        fallback: {
+          ...config.resolve?.fallback,
+          fs: false,
+          child_process: false,
+          net: false,
+          tls: false,
+          dns: false,
+        },
       };
     }
 
