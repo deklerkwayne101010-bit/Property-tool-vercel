@@ -6,6 +6,70 @@ import User from '@/models/User';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if demo mode is enabled
+    if (process.env.DEMO_MODE === 'true') {
+      console.log('🟡 Running in demo mode - simulating registration');
+
+      const { name, email, password, role, agency, phone } = await request.json();
+
+      // Basic validation for demo mode
+      if (!name || !email) {
+        return NextResponse.json(
+          { error: 'Name and email are required' },
+          { status: 400 }
+        );
+      }
+
+      // Validate role
+      const validRoles = ['agent', 'admin', 'user'];
+      const userRole = role && validRoles.includes(role) ? role : 'user';
+
+      // Generate mock JWT token for demo
+      const token = jwt.sign(
+        { userId: 'demo-user-123', email: email, role: userRole },
+        process.env.JWT_SECRET!,
+        { expiresIn: '7d' }
+      );
+
+      // Return mock user data
+      const userData = {
+        id: 'demo-user-123',
+        email: email,
+        name: name,
+        role: userRole,
+        credits: 100, // Demo users get unlimited credits
+        subscription: {
+          plan: 'premium',
+          status: 'active',
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+          features: ['All features unlocked', 'Unlimited usage', 'Premium templates'],
+          autoRenew: false
+        },
+        profile: {
+          agency: agency || 'Demo Real Estate Agency',
+          phone: phone || '+27 12 345 6789'
+        },
+        settings: {
+          notifications: true,
+          theme: 'light'
+        },
+        usage: {
+          descriptionsGenerated: 0,
+          templatesCreated: 0,
+          apiCalls: 0
+        },
+        isEmailVerified: true,
+        isDemo: true
+      };
+
+      return NextResponse.json({
+        message: 'Demo registration successful',
+        token,
+        user: userData
+      }, { status: 201 });
+    }
+
+    // Normal registration flow for production
     await dbConnect();
 
     const { name, email, password, role, agency, phone } = await request.json();

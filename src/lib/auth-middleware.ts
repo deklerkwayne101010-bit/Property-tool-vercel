@@ -15,6 +15,20 @@ export interface AuthenticatedRequest extends NextRequest {
 
 export async function authenticateToken(request: NextRequest): Promise<{ user: unknown } | { error: NextResponse }> {
   try {
+    // Check if demo mode is enabled
+    if (process.env.DEMO_MODE === 'true') {
+      console.log('🟡 Running in demo mode - using mock user');
+      return {
+        user: {
+          userId: 'demo-user-123',
+          email: 'demo@example.com',
+          role: 'admin',
+          name: 'Demo User',
+          isDemo: true
+        }
+      };
+    }
+
     const authHeader = request.headers.get('authorization');
     const token = authHeader && authHeader.split(' ')[1];
 
