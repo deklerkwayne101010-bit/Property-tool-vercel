@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 
@@ -42,7 +42,6 @@ const PerformanceAnalytics: React.FC<PerformanceAnalyticsProps> = ({
   dateRange,
   onDateRangeChange
 }) => {
-  const [selectedMetric, setSelectedMetric] = useState<string>('overview');
 
   // Calculate key metrics
   const totalContacts = contacts.length;
@@ -51,17 +50,12 @@ const PerformanceAnalytics: React.FC<PerformanceAnalyticsProps> = ({
   const totalClients = contacts.filter(c => c.status === 'client').length;
 
   const conversionRate = totalContacts > 0 ? Math.round((totalClients / totalContacts) * 100) : 0;
-  const leadToProspectRate = totalLeads > 0 ? Math.round((totalProspects / (totalLeads + totalProspects)) * 100) : 0;
 
   const totalPipelineValue = contacts.reduce((sum, c) => sum + (c.budget?.max || 0), 0);
   const avgDealSize = totalClients > 0 ? Math.round(totalPipelineValue / totalClients) : 0;
 
   // Activity metrics
   const totalActivities = activities.length;
-  const activitiesThisMonth = activities.filter(a =>
-    new Date(a.date).getMonth() === new Date().getMonth() &&
-    new Date(a.date).getFullYear() === new Date().getFullYear()
-  ).length;
 
   const successfulActivities = activities.filter(a =>
     a.outcome && (a.outcome.toLowerCase().includes('successful') ||
@@ -98,14 +92,6 @@ const PerformanceAnalytics: React.FC<PerformanceAnalyticsProps> = ({
     }).format(amount);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'lead': return 'bg-yellow-100 text-yellow-800';
-      case 'prospect': return 'bg-blue-100 text-blue-800';
-      case 'client': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   const getSourceIcon = (source: string) => {
     switch (source) {

@@ -20,7 +20,8 @@ export default function PaymentSuccessPage() {
       }
 
       // In a real implementation, you would call your backend to verify the payment
-      // For now, we'll simulate success
+      // For now, we'll simulate success and log the payment ID for debugging
+      console.log('Verifying payment with ID:', paymentId);
       setTimeout(() => {
         setStatus('success');
         setMessage('Payment processed successfully! Your credits have been added to your account.');

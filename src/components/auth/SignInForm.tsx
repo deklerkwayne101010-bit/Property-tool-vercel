@@ -15,7 +15,7 @@ export default function SignInForm({ onSuccess }: SignInFormProps) {
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,7 +29,7 @@ export default function SignInForm({ onSuccess }: SignInFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setErrorMessage('');
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -54,10 +54,10 @@ export default function SignInForm({ onSuccess }: SignInFormProps) {
 
         onSuccess?.();
       } else {
-        setError(data.error || 'Login failed');
+        setErrorMessage(data.error || 'Login failed');
       }
-    } catch (error) {
-      setError('Network error. Please try again.');
+    } catch (err) {
+      setErrorMessage('Network error. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -72,9 +72,9 @@ export default function SignInForm({ onSuccess }: SignInFormProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
+          {errorMessage && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
+              {errorMessage}
             </div>
           )}
 

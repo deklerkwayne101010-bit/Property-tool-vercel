@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
@@ -16,18 +16,14 @@ export default function AnalyticsDashboard({ agentId }: AnalyticsDashboardProps)
     end: new Date().toISOString().split('T')[0]
   });
 
-  const [dashboardMetrics, setDashboardMetrics] = useState<any>({});
+  const [dashboardMetrics, setDashboardMetrics] = useState<Record<string, any>>({});
   const [sequenceAnalytics, setSequenceAnalytics] = useState<SequenceAnalytics[]>([]);
   const [channelAnalytics, setChannelAnalytics] = useState<ChannelAnalytics[]>([]);
   const [templateAnalytics, setTemplateAnalytics] = useState<TemplateAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'sequences' | 'channels' | 'templates'>('overview');
 
-  useEffect(() => {
-    loadAnalytics();
-  }, [period, agentId]);
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
     if (!agentId) return;
 
     setLoading(true);
@@ -53,7 +49,11 @@ export default function AnalyticsDashboard({ agentId }: AnalyticsDashboardProps)
     } finally {
       setLoading(false);
     }
-  };
+  }, [agentId, period]);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [loadAnalytics]);
 
   const formatPercentage = (value: number) => `${value.toFixed(1)}%`;
   const formatCurrency = (value: number) => `R${value.toFixed(2)}`;
@@ -109,7 +109,7 @@ export default function AnalyticsDashboard({ agentId }: AnalyticsDashboardProps)
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'overview' | 'sequences' | 'channels' | 'templates')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-600'

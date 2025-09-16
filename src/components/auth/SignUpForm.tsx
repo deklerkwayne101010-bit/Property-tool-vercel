@@ -20,7 +20,7 @@ export default function SignUpForm({ onSuccess }: SignUpFormProps) {
     phone: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -34,11 +34,11 @@ export default function SignUpForm({ onSuccess }: SignUpFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setErrorMessage('');
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setErrorMessage('Passwords do not match');
       setIsLoading(false);
       return;
     }
@@ -73,10 +73,10 @@ export default function SignUpForm({ onSuccess }: SignUpFormProps) {
 
         onSuccess?.();
       } else {
-        setError(data.error || 'Registration failed');
+        setErrorMessage(data.error || 'Registration failed');
       }
-    } catch (error) {
-      setError('Network error. Please try again.');
+    } catch (err) {
+      setErrorMessage('Network error. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -91,9 +91,9 @@ export default function SignUpForm({ onSuccess }: SignUpFormProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
+          {errorMessage && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
+              {errorMessage}
             </div>
           )}
 
