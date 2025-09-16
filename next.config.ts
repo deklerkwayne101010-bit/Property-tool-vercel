@@ -54,13 +54,33 @@ const nextConfig: NextConfig = {
         path: false,
       };
 
-      // Add global polyfill for File
+      // Add global polyfill for File and other browser APIs
       const webpack = require('webpack');
       config.plugins.push(
         new webpack.DefinePlugin({
           'global.File': 'undefined',
+          'global.FileReader': 'undefined',
+          'global.Blob': 'undefined',
+          'global.FormData': 'undefined',
+          'File': 'undefined',
+          'FileReader': 'undefined',
+          'Blob': 'undefined',
+          'FormData': 'undefined',
         })
       );
+
+      // Add rule to ignore File-related modules
+      config.module.rules.push({
+        test: /node_modules\/.*\.(js|ts|tsx)$/,
+        use: {
+          loader: 'string-replace-loader',
+          options: {
+            search: /\b(File|FileReader|Blob|FormData)\b/g,
+            replace: 'undefined',
+            flags: 'g'
+          }
+        }
+      });
     }
 
     return config;
