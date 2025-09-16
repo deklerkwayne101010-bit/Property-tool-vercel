@@ -58,7 +58,7 @@ export default function SubscriptionPage() {
 
   useEffect(() => {
     loadSubscriptionData();
-  }, [router]);
+  }, [router, loadSubscriptionData]);
 
   const handleUpgradePlan = async (planId: string) => {
     setIsUpgrading(planId);

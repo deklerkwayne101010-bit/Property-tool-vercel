@@ -16,7 +16,12 @@ export default function AnalyticsDashboard({ agentId }: AnalyticsDashboardProps)
     end: new Date().toISOString().split('T')[0]
   });
 
-  const [dashboardMetrics, setDashboardMetrics] = useState<Record<string, any>>({});
+  const [dashboardMetrics, setDashboardMetrics] = useState<{
+    totalMessages?: number;
+    deliveryRate?: number;
+    openRate?: number;
+    totalCost?: number;
+  }>({});
   const [sequenceAnalytics, setSequenceAnalytics] = useState<SequenceAnalytics[]>([]);
   const [channelAnalytics, setChannelAnalytics] = useState<ChannelAnalytics[]>([]);
   const [templateAnalytics, setTemplateAnalytics] = useState<TemplateAnalytics[]>([]);

@@ -75,7 +75,7 @@ export default function SignUpForm({ onSuccess }: SignUpFormProps) {
       } else {
         setErrorMessage(data.error || 'Registration failed');
       }
-    } catch (err) {
+    } catch {
       setErrorMessage('Network error. Please try again.');
     } finally {
       setIsLoading(false);

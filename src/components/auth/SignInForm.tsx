@@ -56,7 +56,7 @@ export default function SignInForm({ onSuccess }: SignInFormProps) {
       } else {
         setErrorMessage(data.error || 'Login failed');
       }
-    } catch (err) {
+    } catch {
       setErrorMessage('Network error. Please try again.');
     } finally {
       setIsLoading(false);
