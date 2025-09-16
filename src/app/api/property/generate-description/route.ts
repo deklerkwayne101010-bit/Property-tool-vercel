@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 // Type definitions for better TypeScript support
 type CityKey = keyof typeof SA_PROPERTY_CONTEXT.cities;
 type PropertyTypeKey = keyof typeof SA_PROPERTY_CONTEXT.propertyTypes;
@@ -246,6 +242,11 @@ SOUTH AFRICAN MARKET CONTEXT:
 • Use appropriate pricing context for the area
 
 Create an engaging, SEO-optimized description that captures the property's unique appeal and creates an emotional connection with potential buyers.`;
+
+    // Initialize OpenAI client only when needed (not during build time)
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
