@@ -6,11 +6,8 @@ import SequenceBuilder from '@/components/sequences/SequenceBuilder';
 
 export default function SequenceBuilderPage() {
   const router = useRouter();
-  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = async (sequence: any) => {
-    setIsSaving(true);
-
+  const handleSave = async (sequence: unknown) => {
     try {
       const response = await fetch('/api/sequences', {
         method: 'POST',
@@ -26,16 +23,12 @@ export default function SequenceBuilderPage() {
         throw new Error(error.message || 'Failed to save sequence');
       }
 
-      const result = await response.json();
-
       // Redirect to sequences list or show success message
       router.push('/sequences');
 
     } catch (error) {
       console.error('Save error:', error);
       alert(`Failed to save sequence: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsSaving(false);
     }
   };
 

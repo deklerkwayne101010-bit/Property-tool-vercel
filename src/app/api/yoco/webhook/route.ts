@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import Transaction from '@/models/Transaction';
-import { yocoService } from '@/lib/yoco-service';
 
 export async function POST(request: NextRequest) {
   try {
     await dbConnect();
 
     const body = await request.text();
-    const signature = request.headers.get('x-yoco-signature') || '';
 
     // Verify webhook signature (implement proper verification in production)
     // For now, we'll process the webhook

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateToken } from '@/lib/auth-middleware';
 import Sequence from '@/models/Sequence';
-import { AutomationEngine } from '@/lib/automation-engine';
 import dbConnect from '@/lib/mongodb';
 
 export async function GET(request: NextRequest) {
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
     await dbConnect();
 
     // Build query
-    const query: any = { agentId: user.userId };
+    const query: Record<string, unknown> = { agentId: user.userId };
 
     if (isActive !== null) query.isActive = isActive === 'true';
     if (trigger) query['trigger.type'] = trigger;

@@ -30,37 +30,37 @@ export default function CreditsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    loadCreditsData();
-  }, []);
-
-  const loadCreditsData = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/auth/signin');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/credits', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        setUser({ ...userData, credits: data.credits });
-        setTransactions(data.transactions);
-      } else {
+    const loadCreditsData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
         router.push('/auth/signin');
+        return;
       }
-    } catch (error) {
-      console.error('Error loading credits:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+      try {
+        const response = await fetch('/api/credits', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const userData = JSON.parse(localStorage.getItem('user') || '{}');
+          setUser({ ...userData, credits: data.credits });
+          setTransactions(data.transactions);
+        } else {
+          router.push('/auth/signin');
+        }
+      } catch (error) {
+        console.error('Error loading credits:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCreditsData();
+  }, [router]);
 
   const handlePurchaseCredits = async (packageId: string) => {
     setIsPurchasing(packageId);

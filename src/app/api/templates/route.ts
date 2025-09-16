@@ -11,11 +11,11 @@ async function authenticateUser(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload & { userId: string };
 
     await dbConnect();
     return decoded.userId;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const isPublic = searchParams.get('public') === 'true';
 
-    let query: any = {};
+    const query: Record<string, unknown> = {};
 
     if (isPublic) {
       query.isPublic = true;

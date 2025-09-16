@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -11,20 +11,7 @@ export default function PaymentSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const paymentId = searchParams.get('id');
-    const transactionId = searchParams.get('transactionId');
-
-    if (paymentId) {
-      // Verify payment with backend
-      verifyPayment(paymentId, transactionId);
-    } else {
-      setStatus('error');
-      setMessage('Payment ID not found');
-    }
-  }, [searchParams]);
-
-  const verifyPayment = async (paymentId: string, transactionId?: string | null) => {
+  const verifyPayment = useCallback(async (paymentId: string, transactionId?: string | null) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -44,7 +31,19 @@ export default function PaymentSuccessPage() {
       setStatus('error');
       setMessage('Failed to verify payment. Please contact support.');
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    const paymentId = searchParams.get('id');
+
+    if (paymentId) {
+      // Verify payment with backend
+      verifyPayment(paymentId, searchParams.get('transactionId'));
+    } else {
+      setStatus('error');
+      setMessage('Payment ID not found');
+    }
+  }, [searchParams, verifyPayment]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 sm:px-6 lg:px-8">

@@ -7,9 +7,10 @@ import SATemplateSelector from '@/components/templates/SATemplateSelector';
 export default function SALibraryPage() {
   const router = useRouter();
 
-  const handleSelectTemplate = (template: any) => {
+  const handleSelectTemplate = (template: unknown) => {
     // Navigate to editor with selected template
-    router.push(`/templates/editor?id=${template.id}`);
+    const templateData = template as { id: string };
+    router.push(`/templates/editor?id=${templateData.id}`);
   };
 
   return (

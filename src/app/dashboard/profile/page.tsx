@@ -34,26 +34,26 @@ export default function ProfilePage() {
   const router = useRouter();
 
   useEffect(() => {
+    const loadUserProfile = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/auth/signin');
+        return;
+      }
+
+      try {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        setUser(userData);
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        router.push('/auth/signin');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     loadUserProfile();
-  }, []);
-
-  const loadUserProfile = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/auth/signin');
-      return;
-    }
-
-    try {
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      setUser(userData);
-    } catch (error) {
-      console.error('Error loading profile:', error);
-      router.push('/auth/signin');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [router]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     if (!user) return;
@@ -63,7 +63,7 @@ export default function ProfilePage() {
       setUser({
         ...user,
         [parent]: {
-          ...user[parent as keyof UserProfile] as any,
+          ...user[parent as keyof UserProfile] as Record<string, unknown>,
           [child]: value
         }
       });

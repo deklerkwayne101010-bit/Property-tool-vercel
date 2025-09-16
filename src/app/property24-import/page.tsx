@@ -4,7 +4,7 @@ import React from 'react';
 import Property24Import from '@/components/property/Property24Import';
 
 export default function Property24ImportPage() {
-  const handlePropertyImported = (property: any) => {
+  const handlePropertyImported = (property: unknown) => {
     console.log('Property imported:', property);
     // You can add additional logic here, like showing a success message
     // or redirecting to the property details page

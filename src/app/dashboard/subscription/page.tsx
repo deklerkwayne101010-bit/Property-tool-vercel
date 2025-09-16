@@ -25,10 +25,6 @@ export default function SubscriptionPage() {
   const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    loadSubscriptionData();
-  }, []);
-
   const loadSubscriptionData = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -59,6 +55,10 @@ export default function SubscriptionPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadSubscriptionData();
+  }, [router]);
 
   const handleUpgradePlan = async (planId: string) => {
     setIsUpgrading(planId);

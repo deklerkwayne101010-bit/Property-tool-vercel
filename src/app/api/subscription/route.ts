@@ -14,12 +14,12 @@ async function authenticateUser(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload & { userId: string };
 
     await dbConnect();
     const user = await User.findById(decoded.userId);
     return user;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
