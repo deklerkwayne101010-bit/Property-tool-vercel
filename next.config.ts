@@ -69,17 +69,10 @@ const nextConfig: NextConfig = {
         })
       );
 
-      // Add rule to ignore File-related modules
-      config.module.rules.push({
-        test: /node_modules\/.*\.(js|ts|tsx)$/,
-        use: {
-          loader: 'string-replace-loader',
-          options: {
-            search: /\b(File|FileReader|Blob|FormData)\b/g,
-            replace: 'undefined',
-            flags: 'g'
-          }
-        }
+      // Exclude axios from webpack processing to avoid module resolution issues
+      config.externals = config.externals || [];
+      config.externals.push({
+        axios: 'axios'
       });
     }
 
