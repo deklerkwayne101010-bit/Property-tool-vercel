@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
 
   // Disable static optimization for API routes to prevent File object issues
   experimental: {
-    serverComponentsExternalPackages: ['mongoose'],
     // Disable static generation for API routes
     serverActions: {
       bodySizeLimit: '2mb',
@@ -56,8 +55,9 @@ const nextConfig: NextConfig = {
       };
 
       // Add global polyfill for File
+      const webpack = require('webpack');
       config.plugins.push(
-        new config.webpack.DefinePlugin({
+        new webpack.DefinePlugin({
           'global.File': 'undefined',
         })
       );
