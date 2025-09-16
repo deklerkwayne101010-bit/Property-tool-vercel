@@ -44,6 +44,27 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  // Webpack configuration to handle File object in server environment
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Provide a fallback for File object in server environment
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+      };
+
+      // Add global polyfill for File
+      config.plugins.push(
+        new config.webpack.DefinePlugin({
+          'global.File': 'undefined',
+        })
+      );
+    }
+
+    return config;
+  },
 };
 
 export default nextConfig;
