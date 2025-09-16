@@ -4,6 +4,15 @@ const nextConfig: NextConfig = {
   // Configure external packages for server components
   serverExternalPackages: ['mongoose'],
 
+  // Disable static optimization for API routes to prevent File object issues
+  experimental: {
+    serverComponentsExternalPackages: ['mongoose'],
+    // Disable static generation for API routes
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
+
   // Configure for Netlify deployment
   output: 'standalone',
 
