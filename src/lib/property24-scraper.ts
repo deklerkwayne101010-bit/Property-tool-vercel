@@ -140,9 +140,10 @@ export class Property24Scraper {
    */
   private static parsePropertyData(html: string, propertyId: string): Property24Data {
     try {
-      // Create a temporary DOM element to parse HTML
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
+      // Use cheerio for server-side HTML parsing instead of DOMParser
+      const cheerio = require('cheerio');
+      const $ = cheerio.load(html);
+      const doc = $;
 
       // Extract basic information with multiple fallback selectors
       const title = this.extractText(doc, [
@@ -285,12 +286,12 @@ export class Property24Scraper {
   /**
    * Extract text content using multiple selectors
    */
-  private static extractText(doc: Document, selectors: string[]): string {
+  private static extractText(doc: any, selectors: string[]): string {
     for (const selector of selectors) {
       try {
-        const element = doc.querySelector(selector);
-        if (element && element.textContent) {
-          return element.textContent.trim();
+        const element = doc(selector).first();
+        if (element && element.text()) {
+          return element.text().trim();
         }
       } catch (e) {
         // Skip invalid selectors
@@ -303,15 +304,16 @@ export class Property24Scraper {
   /**
    * Extract property detail by keyword
    */
-  private static extractPropertyDetail(doc: Document, keyword: string): string {
+  private static extractPropertyDetail(doc: any, keyword: string): string {
     // Look for elements containing the keyword
-    const elements = doc.querySelectorAll('*');
+    const elements = doc('*');
     const regex = new RegExp(keyword, 'i');
 
     for (const element of elements) {
-      if (element.textContent && regex.test(element.textContent)) {
+      const text = doc(element).text();
+      if (text && regex.test(text)) {
         // Extract number from the text
-        const numberMatch = element.textContent.match(/(\d+)/);
+        const numberMatch = text.match(/(\d+)/);
         if (numberMatch) {
           return numberMatch[1];
         }
@@ -324,7 +326,7 @@ export class Property24Scraper {
   /**
    * Extract property features
    */
-  private static extractFeatures(doc: Document): string[] {
+  private static extractFeatures(doc: any): string[] {
     const features: string[] = [];
 
     // Common feature selectors
@@ -338,10 +340,11 @@ export class Property24Scraper {
 
     for (const selector of featureSelectors) {
       try {
-        const elements = doc.querySelectorAll(selector);
-        elements.forEach(element => {
-          if (element.textContent) {
-            features.push(element.textContent.trim());
+        const elements = doc(selector);
+        elements.each((index: number, element: any) => {
+          const text = doc(element).text();
+          if (text) {
+            features.push(text.trim());
           }
         });
       } catch (e) {
@@ -356,7 +359,7 @@ export class Property24Scraper {
   /**
    * Extract property images
    */
-  private static extractImages(doc: Document): string[] {
+  private static extractImages(doc: any): string[] {
     const images: string[] = [];
 
     // Common image selectors
@@ -370,11 +373,11 @@ export class Property24Scraper {
 
     for (const selector of imageSelectors) {
       try {
-        const elements = doc.querySelectorAll(selector);
-        elements.forEach(element => {
-          const img = element as HTMLImageElement;
-          if (img.src && img.src.startsWith('http')) {
-            images.push(img.src);
+        const elements = doc(selector);
+        elements.each((index: number, element: any) => {
+          const src = doc(element).attr('src');
+          if (src && src.startsWith('http')) {
+            images.push(src);
           }
         });
       } catch (e) {
